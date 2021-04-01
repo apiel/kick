@@ -25,10 +25,8 @@ class IO_AudioSynth : public AudioDumb {
 
     bool useAdsr = true;
 
-    float attackMs = 50.0;
+    float attackMs = 0.0;
     float decayMs = 50.0;
-    float sustainLevel = 0.9;
-    float releaseMs = 50.0;
 
     float filterFrequency = 1000.0;
     float filterOctaveControl = 1.0;
@@ -54,10 +52,10 @@ class IO_AudioSynth : public AudioDumb {
 
         env.attack(attackMs);
         env.decay(decayMs);
-        env.sustain(sustainLevel);
-        env.release(releaseMs);
-        env.hold(0);
-        env.delay(0);
+        env.sustain(0.0);
+        env.release(0.0);
+        env.hold(0.0);
+        env.delay(0.0);
 
         setCurrentFilter(0);
         filter.frequency(filterFrequency);
@@ -122,16 +120,6 @@ class IO_AudioSynth : public AudioDumb {
         env.decay(decayMs);
     }
 
-    void setRelease(int8_t direction) {
-        releaseMs = constrain(releaseMs + direction, 0, 11880);
-        env.release(releaseMs);
-    }
-
-    void setSustain(int8_t direction) {
-        sustainLevel = pctAdd(sustainLevel, direction);
-        env.sustain(sustainLevel);
-    }
-
     void noteOn() { noteOn(_C4, 127); }
 
     void noteOn(byte note, byte velocity) {
@@ -147,6 +135,8 @@ class IO_AudioSynth : public AudioDumb {
         modulation.lfoMod.phase(0.0);
         modulation.envMod.noteOn();
         env.noteOn();
+        // maybe not the best place?
+        wave.simpleDrum.noteOn();
     }
 
     void noteOff() { noteOff(_C4); }

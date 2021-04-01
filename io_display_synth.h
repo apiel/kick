@@ -29,6 +29,9 @@ const char* getWave(byte w) {
                 return "Tri var";
         }
     }
+    if (w == WAVEFORM_COUNT) {
+        return "Simple drum";
+    }
     IO_AudioSynthWaveListRaw* r = r->getInstance();
     w = w - WAVEFORM_COUNT;
     if (w < r->rawWaveCount) {
@@ -59,9 +62,7 @@ void displaySynth(Adafruit_SSD1306* d) {
               (int)(synth.wave.amplitude * 100));
 
     if (synth.useAdsr) {
-        d->printf("ADSR %d|%d|%d%%|%d\n", (int)synth.attackMs,
-                  (int)synth.decayMs, (int)(synth.sustainLevel * 100),
-                  (int)synth.releaseMs);
+        d->printf("ADSR %d|%d\n", (int)synth.attackMs, (int)synth.decayMs);
     } else {
         d->println("ADSR off");
     }
@@ -74,10 +75,8 @@ void displaySynth(Adafruit_SSD1306* d) {
 
     addToCursor(d, 0, 4);
     if (synth.modulation.currentModulation == MOD_ENV) {
-        d->printf("mod %d|%d|%d%%|%d\n", (int)synth.modulation.modAttackMs,
-                  (int)synth.modulation.modDecayMs,
-                  (int)(synth.modulation.modSustainLevel * 100),
-                  (int)synth.modulation.modReleaseMs);
+        d->printf("mod %d|%d\n", (int)synth.modulation.modAttackMs,
+                  (int)synth.modulation.modDecayMs);
     } else if (synth.modulation.currentModulation == MOD_LFO) {
         d->printf("Lfo %.1fHz %d%% %s\n", synth.modulation.lfoFrequency,
                   (int)(synth.modulation.lfoAmplitude * 100),

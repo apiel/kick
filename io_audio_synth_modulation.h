@@ -19,10 +19,8 @@ class IO_AudioSynthModulation : public AudioDumb {
     AudioSynthWaveform lfoMod;
 
     byte currentModulation = 1;
-    float modAttackMs = 100.0;
-    float modDecayMs = 50.0;
-    float modSustainLevel = 0.7;
-    float modReleaseMs = 50.0;
+    float modAttackMs = 10.0;
+    float modDecayMs = 40.0;
 
     float lfoFrequency = 1.0;
     float lfoAmplitude = 0.5;
@@ -44,12 +42,12 @@ class IO_AudioSynthModulation : public AudioDumb {
         lfoMod.begin(lfoWave);
 
         dc.amplitude(0.5);
-        envMod.delay(0);
+        envMod.delay(0.0);
         envMod.attack(modAttackMs);
-        envMod.hold(0);
+        envMod.hold(0.0);
         envMod.decay(modDecayMs);
-        envMod.sustain(modSustainLevel);
-        envMod.release(modReleaseMs);
+        envMod.sustain(0.0);
+        envMod.release(0.0);
     }
 
     void init() { applyCord(); }
@@ -79,16 +77,6 @@ class IO_AudioSynthModulation : public AudioDumb {
     void setModDecay(int8_t direction) {
         modDecayMs = constrain(modDecayMs + direction, 0, 11880);
         envMod.decay(modDecayMs);
-    }
-
-    void setModSustain(int8_t direction) {
-        modSustainLevel = pctAdd(modSustainLevel, direction);
-        envMod.sustain(modSustainLevel);
-    }
-
-    void setModRelease(int8_t direction) {
-        modReleaseMs = constrain(modReleaseMs + direction, 0, 11880);
-        envMod.release(modReleaseMs);
     }
 
     void setNextWaveform(int8_t direction) {

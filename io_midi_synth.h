@@ -45,9 +45,9 @@ void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
         } else if (knob == 6) {
             synth.setDecay(direction);
         } else if (knob == 7) {
-            synth.setSustain(direction);
+            // synth.setSustain(direction);
         } else if (knob == 8) {
-            synth.setRelease(direction);
+            // synth.setRelease(direction);
         } else if (knob == 11) {
             synth.setFilterFrequency(direction);
         } else if (knob == 12) {
@@ -68,13 +68,13 @@ void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
             }
         } else if (knob == 17) {
             if (synth.modulation.currentModulation == MOD_ENV) {
-                synth.modulation.setModSustain(direction);
+                // synth.modulation.setModSustain(direction);
             } else if (synth.modulation.currentModulation == MOD_LFO) {
                 synth.modulation.setAmplitude(direction);
             }
         } else if (knob == 0) {  // 0 for 18
             if (synth.modulation.currentModulation == MOD_ENV) {
-                synth.modulation.setModRelease(direction);
+                // synth.modulation.setModRelease(direction);
             } else if (synth.modulation.currentModulation == MOD_LFO) {
                 synth.modulation.setNextWaveform(direction);
             }

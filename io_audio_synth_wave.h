@@ -63,6 +63,7 @@ class IO_AudioSynthWave : public AudioDumb {
 
     AudioSynthWaveformModulated waveform;
     AudioSynthWaveTableSD<> waveTable;
+    AudioSynthSimpleDrum simpleDrum;
     AudioDumb input;
 
     byte currentWaveform = WAVEFORM_SINE;
@@ -76,12 +77,17 @@ class IO_AudioSynthWave : public AudioDumb {
     AudioConnection* patchCordInputToWaveTable;
     AudioConnection* patchCordWaveTableToDumb;
 
+    AudioConnection* patchCordInputToSimpleDrum;
+    AudioConnection* patchCordSimpleDrumToDumb;
+
     IO_AudioSynthWave() {
         patchCordInputToWaveTable = new AudioConnection(input, waveTable);
         patchCordInputToWaveForm = new AudioConnection(input, waveform);
+        patchCordInputToSimpleDrum = new AudioConnection(input, simpleDrum);
 
         patchCordWaveFormToDumb = new AudioConnection(waveform, *this);
         patchCordWaveTableToDumb = new AudioConnection(waveTable, *this);
+        patchCordSimpleDrumToDumb = new AudioConnection(simpleDrum, *this);
 
         applyCord();
 
@@ -91,17 +97,26 @@ class IO_AudioSynthWave : public AudioDumb {
         waveform.begin(currentWaveform);
 
         waveTable.amplitude(amplitude)->frequency(frequency);
+
+        simpleDrum.frequency(frequency);
+        // should attack decay
+        // simpleDrum.length(100);
     }
 
     void applyCord() {
+        patchCordInputToWaveTable->disconnect();
+        patchCordWaveTableToDumb->disconnect();
+        patchCordWaveFormToDumb->disconnect();
+        patchCordInputToWaveForm->disconnect();
+        patchCordInputToSimpleDrum->disconnect();
+        patchCordSimpleDrumToDumb->disconnect();
         if (currentWaveform < WAVEFORM_COUNT) {
-            patchCordInputToWaveTable->disconnect();
-            patchCordWaveTableToDumb->disconnect();
             patchCordWaveFormToDumb->connect();
             patchCordInputToWaveForm->connect();
+        } else if (currentWaveform == WAVEFORM_COUNT) {
+            patchCordInputToSimpleDrum->connect();
+            patchCordSimpleDrumToDumb->connect();
         } else {
-            patchCordWaveFormToDumb->disconnect();
-            patchCordInputToWaveForm->disconnect();
             patchCordInputToWaveTable->connect();
             patchCordWaveTableToDumb->connect();
         }
@@ -112,6 +127,7 @@ class IO_AudioSynthWave : public AudioDumb {
             constrain(frequency + direction, 0, AUDIO_SAMPLE_RATE_EXACT / 2);
         waveform.frequency(frequency);
         waveTable.frequency(frequency);
+        simpleDrum.frequency(frequency);
     }
 
     void setAmplitude(int8_t direction) {
