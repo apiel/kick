@@ -6,40 +6,6 @@
 #include "io_display.h"
 #include "io_display_util.h"
 
-const char* getWave(byte w) {
-    if (w < WAVEFORM_COUNT) {
-        switch (w) {
-            case 0:
-                return "Sine";
-            case 1:
-                return "Sawtooth";
-            case 2:
-                return "Square";
-            case 3:
-                return "Triangle";
-            case 4:
-                return "Arbitrary";
-            case 5:
-                return "Pulse";
-            case 6:
-                return "Saw reverse";
-            case 7:
-                return "Sample hold";
-            case 8:
-                return "Tri var";
-        }
-    }
-    if (w == WAVEFORM_COUNT) {
-        return "Simple drum";
-    }
-    IO_AudioSynthWaveListRaw* r = r->getInstance();
-    w = w - WAVEFORM_COUNT;
-    if (w < r->rawWaveCount) {
-        return r->wavetableName[w];
-    }
-    return "unknown";
-}
-
 const char* getFilter(byte w) {
     switch (w) {
         case 0:
@@ -56,16 +22,9 @@ void displaySynth(Adafruit_SSD1306* d) {
     d->clearDisplay();
     d->setCursor(0, 0);
 
-    d->printf("%s\n", getWave(synth.wave.currentWaveform));
+    d->printf("%.1fHz %d%%\n", synth.frequency, (int)(synth.amplitude * 100));
 
-    d->printf("%.1fHz %d%%\n", synth.wave.frequency,
-              (int)(synth.wave.amplitude * 100));
-
-    if (synth.useAdsr) {
-        d->printf("ADSR %d|%d\n", (int)synth.attackMs, (int)synth.decayMs);
-    } else {
-        d->println("ADSR off");
-    }
+    d->printf("ADSR %d|%d\n", (int)synth.attackMs, (int)synth.decayMs);
 
     addToCursor(d, 0, 4);
     d->printf("%s %.1fHz\n", getFilter(synth.currentFilter),
@@ -74,14 +33,8 @@ void displaySynth(Adafruit_SSD1306* d) {
               synth.filterOctaveControl);
 
     addToCursor(d, 0, 4);
-    if (synth.modulation.currentModulation == MOD_ENV) {
-        d->printf("mod %d|%d\n", (int)synth.modulation.modAttackMs,
-                  (int)synth.modulation.modDecayMs);
-    } else if (synth.modulation.currentModulation == MOD_LFO) {
-        d->printf("Lfo %.1fHz %d%% %s\n", synth.modulation.lfoFrequency,
-                  (int)(synth.modulation.lfoAmplitude * 100),
-                  getWave(synth.modulation.lfoWave));
-    }
+    d->printf("mod %d|%d|%d\n", (int)synth.modAttackMs, (int)synth.modHoldMs,
+              (int)synth.modDecayMs);
 }
 
 #endif

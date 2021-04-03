@@ -5,8 +5,6 @@
 #include <Audio.h>
 
 #include "audio_dumb.h"
-#include "io_audio_synth_modulation.h"
-#include "io_audio_synth_wave.h"
 #include "io_util.h"
 #include "note.h"
 
@@ -16,39 +14,43 @@
 class IO_AudioSynth : public AudioDumb {
    protected:
    public:
-    IO_AudioSynthModulation modulation;
+    AudioSynthWaveformModulated waveform;
     AudioEffectEnvelope env;
     AudioFilterStateVariable filter;
-    IO_AudioSynthWave wave;
+    AudioSynthWaveformDc dc;
+    AudioEffectEnvelope envMod;
+
+    float frequency = 50.0;
+    float amplitude = 1.0;
 
     byte lastNote = 0;
-
-    bool useAdsr = true;
 
     float attackMs = 0.0;
     float decayMs = 50.0;
 
-    float filterFrequency = 1000.0;
+    float modAttackMs = 10.0;
+    float modHoldMs = 0.0;
+    float modDecayMs = 40.0;
+
+    float filterFrequency = 500.0;
     float filterOctaveControl = 1.0;
     float filterResonance = 0.7;
     byte currentFilter = 0;
 
     AudioConnection* patchCordFilter[FILTER_TYPE_COUNT];
     AudioConnection* patchCordEnvToFilter;
-    AudioConnection* patchCordWaveToFilter;
     AudioConnection* patchCordWaveToEnv;
-    AudioConnection* patchCordMod;
+    AudioConnection* patchCordDcToEnvMod;
+    AudioConnection* patchCordEnvModToWave;
 
     IO_AudioSynth() {
-        patchCordMod = new AudioConnection(modulation, wave.input);
-        patchCordWaveToFilter = new AudioConnection(wave, filter);
-        patchCordWaveToEnv = new AudioConnection(wave, env);
+        patchCordDcToEnvMod = new AudioConnection(dc, envMod);
+        patchCordEnvModToWave = new AudioConnection(envMod, waveform);
+        patchCordWaveToEnv = new AudioConnection(waveform, env);
         patchCordEnvToFilter = new AudioConnection(env, filter);
         patchCordFilter[0] = new AudioConnection(filter, 0, *this, 0);
         patchCordFilter[1] = new AudioConnection(filter, 1, *this, 0);
         patchCordFilter[2] = new AudioConnection(filter, 2, *this, 0);
-
-        applyFilterCord();
 
         env.attack(attackMs);
         env.decay(decayMs);
@@ -61,28 +63,31 @@ class IO_AudioSynth : public AudioDumb {
         filter.frequency(filterFrequency);
         filter.resonance(filterResonance);
         filter.octaveControl(filterOctaveControl);
+
+        waveform.frequency(frequency);
+        waveform.amplitude(amplitude);
+        waveform.begin(WAVEFORM_SINE);
+
+        dc.amplitude(0.5);
+        envMod.delay(0.0);
+        envMod.attack(modAttackMs);
+        envMod.hold(modHoldMs);
+        envMod.decay(modDecayMs);
+        envMod.sustain(0.0);
+        envMod.release(0.0);
     }
 
-    void init() {
-        wave.init();
-        modulation.init();
+    void init() {}
+
+    void setFrequency(int8_t direction) {
+        frequency =
+            constrain(frequency + direction, 0, AUDIO_SAMPLE_RATE_EXACT / 2);
+        waveform.frequency(frequency);
     }
 
-    void toggleAdsr() {
-        useAdsr = !useAdsr;
-        applyFilterCord();
-    }
-
-    void applyFilterCord() {
-        if (useAdsr) {
-            patchCordWaveToFilter->disconnect();
-            patchCordWaveToEnv->connect();
-            patchCordEnvToFilter->connect();
-        } else {
-            patchCordWaveToFilter->connect();
-            patchCordEnvToFilter->disconnect();
-            patchCordWaveToEnv->disconnect();
-        }
+    void setAmplitude(int8_t direction) {
+        amplitude = pctAdd(amplitude, direction);
+        waveform.amplitude(amplitude);
     }
 
     void setCurrentFilter(int8_t direction) {
@@ -110,6 +115,21 @@ class IO_AudioSynth : public AudioDumb {
         filter.octaveControl(filterOctaveControl);
     }
 
+    void setModAttack(int8_t direction) {
+        modAttackMs = constrain(modAttackMs + direction, 0, 11880);
+        envMod.attack(modAttackMs);
+    }
+
+    void setModHold(int8_t direction) {
+        modHoldMs = constrain(modHoldMs + direction, 0, 11880);
+        envMod.decay(modHoldMs);
+    }
+
+    void setModDecay(int8_t direction) {
+        modDecayMs = constrain(modDecayMs + direction, 0, 11880);
+        envMod.decay(modDecayMs);
+    }
+
     void setAttack(int8_t direction) {
         attackMs = constrain(attackMs + direction, 0, 11880);
         env.attack(attackMs);
@@ -123,30 +143,19 @@ class IO_AudioSynth : public AudioDumb {
     void noteOn() { noteOn(_C4, 127); }
 
     void noteOn(byte note, byte velocity) {
-        Serial.println("note onnnnnn");
         lastNote = note;
 
-        float _freq = wave.frequency + NOTE_FREQ[note] - NOTE_FREQ[_C4];
-        float _amp = wave.amplitude * velocity / 127;
+        float _freq = frequency + NOTE_FREQ[note] - NOTE_FREQ[_C4];
+        float _amp = amplitude * velocity / 127;
 
-        wave.waveform.amplitude(_amp);
-        wave.waveform.frequency(_freq);
-        wave.waveTable.reset()->amplitude(_amp)->frequency(_freq);
-        modulation.lfoMod.phase(0.0);
-        modulation.envMod.noteOn();
+        waveform.amplitude(_amp);
+        waveform.frequency(_freq);
+        envMod.noteOn();
         env.noteOn();
-        // maybe not the best place?
-        wave.simpleDrum.noteOn();
     }
 
-    void noteOff() { noteOff(_C4); }
-
-    void noteOff(byte note) {
-        if (note == lastNote) {
-            env.noteOff();
-            modulation.envMod.noteOff();
-        }
-    }
+    void noteOff() {}
+    void noteOff(byte note) {}
 };
 
 #endif

@@ -17,7 +17,6 @@ void synthNoteOnHandler(byte channel, byte note, byte velocity) {
         } else if (note == 23 || note == 47) {
             // saveSynth(currentSynth);
         } else if (note == 20) {
-            synth.toggleAdsr();
         }
     }
 }
@@ -33,21 +32,17 @@ void synthNoteOffHandler(byte channel, byte note, byte velocity) {
 void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
     if (channel == 11) {
         if (knob == 1) {
-            synth.wave.setNextWaveform(direction);
         } else if (knob == 2) {
-            synth.wave.setFrequency(direction);
+            synth.setFrequency(direction);
         } else if (knob == 3) {
-            synth.wave.setAmplitude(direction);
+            synth.setAmplitude(direction);
         } else if (knob == 4) {
-            synth.modulation.setModulation(direction);
         } else if (knob == 5) {
-            synth.setAttack(direction);
         } else if (knob == 6) {
-            synth.setDecay(direction);
         } else if (knob == 7) {
-            // synth.setSustain(direction);
+            synth.setAttack(direction);
         } else if (knob == 8) {
-            // synth.setRelease(direction);
+            synth.setDecay(direction);
         } else if (knob == 11) {
             synth.setFilterFrequency(direction);
         } else if (knob == 12) {
@@ -57,27 +52,12 @@ void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
         } else if (knob == 14) {
             synth.setCurrentFilter(direction);
         } else if (knob == 15) {
-            if (synth.modulation.currentModulation == MOD_ENV) {
-                synth.modulation.setModAttack(direction);
-            }
         } else if (knob == 16) {
-            if (synth.modulation.currentModulation == MOD_ENV) {
-                synth.modulation.setModDecay(direction);
-            } else if (synth.modulation.currentModulation == MOD_LFO) {
-                synth.modulation.setFrequency(direction);
-            }
+            synth.setModAttack(direction);
         } else if (knob == 17) {
-            if (synth.modulation.currentModulation == MOD_ENV) {
-                // synth.modulation.setModSustain(direction);
-            } else if (synth.modulation.currentModulation == MOD_LFO) {
-                synth.modulation.setAmplitude(direction);
-            }
+            synth.setModHold(direction);
         } else if (knob == 0) {  // 0 for 18
-            if (synth.modulation.currentModulation == MOD_ENV) {
-                // synth.modulation.setModRelease(direction);
-            } else if (synth.modulation.currentModulation == MOD_LFO) {
-                synth.modulation.setNextWaveform(direction);
-            }
+            synth.setModDecay(direction);
         }
     }
 }
