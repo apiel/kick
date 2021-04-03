@@ -122,7 +122,7 @@ class IO_AudioSynth : public AudioDumb {
 
     void setModHold(int8_t direction) {
         modHoldMs = constrain(modHoldMs + direction, 0, 11880);
-        envMod.decay(modHoldMs);
+        envMod.hold(modHoldMs);
     }
 
     void setModDecay(int8_t direction) {
