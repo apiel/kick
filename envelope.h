@@ -22,18 +22,13 @@ class Envelope : public AudioStream {
         if (state_count[_state] == 0) state_count[_state] = 1;
         if (state > 0) {
             if (state_mult[_state] == state_mult[_state - 1]) {
-                Serial.println("state mult are equal");
                 inc_hires[_state] = 0;
             } else {
                 inc_hires[_state] =
                     (state_mult[_state] - state_mult[_state - 1]) /
                     (int32_t)state_count[_state];
-                Serial.printf("calc mult %d - %d / %d\n", state_mult[_state],
-                              state_mult[_state - 1], state_count[_state]);
             }
         }
-        Serial.printf("mult %d count %d inc %d\n", state_mult[_state],
-                      state_count[_state], inc_hires[_state]);
     }
 
     using AudioStream::release;
@@ -64,7 +59,6 @@ class Envelope : public AudioStream {
             if (count == 0) {
                 state++;
                 count = state_count[state];
-                Serial.printf("Next state %d\n", (int)state);
                 if (state > STATE_COUNT) {
                     while (p < end) {
                         *p++ = 0;
@@ -72,7 +66,6 @@ class Envelope : public AudioStream {
                         *p++ = 0;
                         *p++ = 0;
                     }
-                    Serial.println("Exit loop");
                     break;
                 }
             }

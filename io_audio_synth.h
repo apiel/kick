@@ -5,12 +5,13 @@
 #include <Audio.h>
 
 #include "audio_dumb.h"
+#include "envelope.h"
 #include "io_util.h"
 #include "note.h"
-#include "envelope.h"
 
 #define FILTER_TYPE_COUNT 3
 #define AUDIO_SYNTH_MOD 3
+#define MOD_ENV_SIZE 8
 
 class IO_AudioSynth : public AudioDumb {
    protected:
@@ -19,7 +20,7 @@ class IO_AudioSynth : public AudioDumb {
     Envelope<2> env;
     AudioFilterStateVariable filter;
     AudioSynthWaveformDc dc;
-    AudioEffectEnvelope envMod;
+    Envelope<8> envMod;
 
     float frequency = 15.0;
     float amplitude = 1.0;
@@ -29,9 +30,8 @@ class IO_AudioSynth : public AudioDumb {
     float attackMs = 10.0;
     float decayMs = 80.0;
 
-    float modAttackMs = 5.0;
-    float modHoldMs = 20.0;
-    float modDecayMs = 100.0;
+    float modMs[MOD_ENV_SIZE] = {5.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 5.0};
+    float modLevel[MOD_ENV_SIZE] = {1.0, 0.8, 0.6, 0.4, 0.3, 0.2, 0.1, 0.0};
 
     float filterFrequency = 200.0;
     float filterOctaveControl = 1.0;
@@ -53,12 +53,6 @@ class IO_AudioSynth : public AudioDumb {
         patchCordFilter[1] = new AudioConnection(filter, 1, *this, 0);
         patchCordFilter[2] = new AudioConnection(filter, 2, *this, 0);
 
-        // env.attack(attackMs);
-        // env.decay(decayMs);
-        // env.sustain(0.0);
-        // env.release(0.0);
-        // env.hold(0.0);
-        // env.delay(0.0);
         env.set(1, 1.0, attackMs);
         env.set(2, 0.0, decayMs);
 
@@ -72,15 +66,24 @@ class IO_AudioSynth : public AudioDumb {
         waveform.begin(WAVEFORM_SINE);
 
         dc.amplitude(0.5);
-        envMod.delay(0.0);
-        envMod.attack(modAttackMs);
-        envMod.hold(modHoldMs);
-        envMod.decay(modDecayMs);
-        envMod.sustain(0.0);
-        envMod.release(0.0);
+
+        for (byte n = 0; n < MOD_ENV_SIZE; n++) {
+            envMod.set(n + 1, modLevel[n], modMs[n]);
+        }
     }
 
     void init() {}
+
+    void setModMs(byte state, int8_t direction) {
+        modMs[state] = constrain(modMs[state] + direction, 0.0, 11880.0);
+        envMod.set(state + 1, modLevel[state], modMs[state]);
+    }
+
+    void setModLevel(byte state, int8_t direction) {
+        modLevel[state] =
+            constrain(modLevel[state] + direction * 0.01, 0.0, 1.0);
+        envMod.set(state + 1, modLevel[state], modMs[state]);
+    }
 
     void setFrequency(int8_t direction) {
         frequency =
@@ -116,21 +119,6 @@ class IO_AudioSynth : public AudioDumb {
         filterOctaveControl =
             constrain(filterOctaveControl + direction * 0.1, 0.0, 7.0);
         filter.octaveControl(filterOctaveControl);
-    }
-
-    void setModAttack(int8_t direction) {
-        modAttackMs = constrain(modAttackMs + direction, 0, 11880);
-        envMod.attack(modAttackMs);
-    }
-
-    void setModHold(int8_t direction) {
-        modHoldMs = constrain(modHoldMs + direction, 0, 11880);
-        envMod.hold(modHoldMs);
-    }
-
-    void setModDecay(int8_t direction) {
-        modDecayMs = constrain(modDecayMs + direction, 0, 11880);
-        envMod.decay(modDecayMs);
     }
 
     void setAttack(int8_t direction) {

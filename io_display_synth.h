@@ -5,6 +5,7 @@
 
 #include "io_display.h"
 #include "io_display_util.h"
+#include "io_state.h"
 
 const char* getFilter(byte w) {
     switch (w) {
@@ -31,8 +32,19 @@ void displaySynth(Adafruit_SSD1306* d) {
               synth.filterFrequency, synth.filterResonance);
 
     addToCursor(d, 0, 4);
-    d->printf("mod %d|%d|%d\n", (int)synth.modAttackMs, (int)synth.modHoldMs,
-              (int)synth.modDecayMs);
+    if (mcMode) {
+        d->printf("ML%.2f|%.2f|%.2f|%.2f\n", synth.modLevel[0],
+                  synth.modLevel[1], synth.modLevel[2], synth.modLevel[3]);
+        d->printf("ML%.2f|%.2f|%.2f|%.2f\n", synth.modLevel[4],
+                  synth.modLevel[5], synth.modLevel[6], synth.modLevel[7]);
+    } else {
+        d->printf("modMs %d|%d|%d|%d\n", (int)synth.modMs[0],
+                  (int)synth.modMs[1], (int)synth.modMs[2],
+                  (int)synth.modMs[3]);
+        d->printf("modMs %d|%d|%d|%d\n", (int)synth.modMs[4],
+                  (int)synth.modMs[5], (int)synth.modMs[6],
+                  (int)synth.modMs[7]);
+    }
 }
 
 #endif
