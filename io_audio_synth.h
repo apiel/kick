@@ -7,6 +7,7 @@
 #include "audio_dumb.h"
 #include "io_util.h"
 #include "note.h"
+#include "envelope.h"
 
 #define FILTER_TYPE_COUNT 3
 #define AUDIO_SYNTH_MOD 3
@@ -15,7 +16,7 @@ class IO_AudioSynth : public AudioDumb {
    protected:
    public:
     AudioSynthWaveformModulated waveform;
-    AudioEffectEnvelope env;
+    Envelope<2> env;
     AudioFilterStateVariable filter;
     AudioSynthWaveformDc dc;
     AudioEffectEnvelope envMod;
@@ -52,12 +53,14 @@ class IO_AudioSynth : public AudioDumb {
         patchCordFilter[1] = new AudioConnection(filter, 1, *this, 0);
         patchCordFilter[2] = new AudioConnection(filter, 2, *this, 0);
 
-        env.attack(attackMs);
-        env.decay(decayMs);
-        env.sustain(0.0);
-        env.release(0.0);
-        env.hold(0.0);
-        env.delay(0.0);
+        // env.attack(attackMs);
+        // env.decay(decayMs);
+        // env.sustain(0.0);
+        // env.release(0.0);
+        // env.hold(0.0);
+        // env.delay(0.0);
+        env.set(1, 1.0, attackMs);
+        env.set(2, 0.0, decayMs);
 
         setCurrentFilter(0);
         filter.frequency(filterFrequency);
@@ -132,12 +135,14 @@ class IO_AudioSynth : public AudioDumb {
 
     void setAttack(int8_t direction) {
         attackMs = constrain(attackMs + direction, 0, 11880);
-        env.attack(attackMs);
+        // env.attack(attackMs);
+        env.set(1, 1.0, attackMs);
     }
 
     void setDecay(int8_t direction) {
         decayMs = constrain(decayMs + direction, 0, 11880);
-        env.decay(decayMs);
+        // env.decay(decayMs);
+        env.set(2, 0.0, decayMs);
     }
 
     void noteOn() { noteOn(_C4, 127); }
