@@ -20,19 +20,19 @@ class IO_AudioSynth : public AudioDumb {
     AudioSynthWaveformDc dc;
     AudioEffectEnvelope envMod;
 
-    float frequency = 50.0;
+    float frequency = 15.0;
     float amplitude = 1.0;
 
     byte lastNote = 0;
 
-    float attackMs = 0.0;
-    float decayMs = 50.0;
+    float attackMs = 10.0;
+    float decayMs = 80.0;
 
-    float modAttackMs = 10.0;
-    float modHoldMs = 0.0;
-    float modDecayMs = 40.0;
+    float modAttackMs = 5.0;
+    float modHoldMs = 20.0;
+    float modDecayMs = 100.0;
 
-    float filterFrequency = 500.0;
+    float filterFrequency = 200.0;
     float filterOctaveControl = 1.0;
     float filterResonance = 0.7;
     byte currentFilter = 0;
