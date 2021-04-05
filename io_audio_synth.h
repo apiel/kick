@@ -4,10 +4,13 @@
 #include <Arduino.h>
 #include <Audio.h>
 
+#include "arbitraryWaveform.h"
 #include "audio_dumb.h"
 #include "envelope.h"
 #include "io_util.h"
 #include "note.h"
+
+#define WAVEFORM_COUNT 9
 
 #define FILTER_TYPE_COUNT 3
 #define AUDIO_SYNTH_MOD 3
@@ -22,6 +25,7 @@ class IO_AudioSynth : public AudioDumb {
     AudioSynthWaveformDc dc;
     Envelope<8> envMod;
 
+    byte currentWaveform = WAVEFORM_SINE;
     float frequency = 15.0;
     float amplitude = 1.0;
 
@@ -64,6 +68,7 @@ class IO_AudioSynth : public AudioDumb {
         waveform.frequency(frequency);
         waveform.amplitude(amplitude);
         waveform.begin(WAVEFORM_SINE);
+        waveform.arbitraryWaveform(arbitraryWaveform, 172.0);
 
         dc.amplitude(0.5);
 
@@ -83,6 +88,11 @@ class IO_AudioSynth : public AudioDumb {
         modLevel[state] =
             constrain(modLevel[state] + direction * 0.01, 0.0, 1.0);
         envMod.set(state + 1, modLevel[state], modMs[state]);
+    }
+
+    void setNextWaveform(int8_t direction) {
+        currentWaveform = mod(currentWaveform + direction, WAVEFORM_COUNT);
+        waveform.begin(currentWaveform);
     }
 
     void setFrequency(int8_t direction) {

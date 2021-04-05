@@ -7,6 +7,32 @@
 #include "io_display_util.h"
 #include "io_state.h"
 
+const char* getWave(byte w) {
+    if (w < WAVEFORM_COUNT) {
+        switch (w) {
+            case 0:
+                return "Sin";
+            case 1:
+                return "Saw";
+            case 2:
+                return "Squ";
+            case 3:
+                return "Tri";
+            case 4:
+                return "Arb";
+            case 5:
+                return "Pul";
+            case 6:
+                return "Rev";
+            case 7:
+                return "S&H";
+            case 8:
+                return "Var";
+        }
+    }
+    return "unk";
+}
+
 const char* getFilter(byte w) {
     switch (w) {
         case 0:
@@ -23,7 +49,8 @@ void displaySynth(Adafruit_SSD1306* d) {
     d->clearDisplay();
     d->setCursor(0, 0);
 
-    d->printf("%.1fHz %d%%\n", synth.frequency, (int)(synth.amplitude * 100));
+    d->printf("%s %.1fHz %d%%\n", getWave(synth.currentWaveform),
+              synth.frequency, (int)(synth.amplitude * 100));
 
     d->printf("EG %d|%d\n", (int)synth.attackMs, (int)synth.decayMs);
 
