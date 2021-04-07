@@ -45,9 +45,16 @@ void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
                 synth.setFrequency(direction);
             }
         } else if (knob == 3) {
-            synth.setAmplitude(direction);
+            if (mcMode) {
+                synth.setDistortionRange(direction);
+            } else {
+                synth.setAmplitude(direction);
+            }
         } else if (knob == 4) {
-            synth.setCurrentFilter(direction);
+            if (mcMode) {
+            } else {
+                synth.setCurrentFilter(direction);
+            }
         } else if (knob == 5) {
             synth.setFilterFrequency(direction);
         } else if (knob == 6) {

@@ -26,9 +26,8 @@ class IO_AudioSynth : public AudioDumb {
     AudioSynthWaveformDc dc;
     Envelope<8> envMod;
     AudioEffectBitcrusher bitcrusher;
-    AudioEffectDistortion effect;
+    AudioEffectDistortion distortion;
     // AudioEffectRectifier effect; // might be useful
-    // AudioEffectDigitalCombine effect;
 
     byte currentWaveform = WAVEFORM_SINE;
     float frequency = 15.0;
@@ -54,7 +53,6 @@ class IO_AudioSynth : public AudioDumb {
     AudioConnection* patchCordWaveToEnv;
     AudioConnection* patchCordDcToEnvMod;
     AudioConnection* patchCordEnvModToWave;
-    // AudioConnection* patchCordEffect[3];
     AudioConnection* patchCordEffect[2];
 
     IO_AudioSynth() {
@@ -65,10 +63,8 @@ class IO_AudioSynth : public AudioDumb {
         patchCordFilter[0] = new AudioConnection(filter, 0, bitcrusher, 0);
         patchCordFilter[1] = new AudioConnection(filter, 1, bitcrusher, 0);
         patchCordFilter[2] = new AudioConnection(filter, 2, bitcrusher, 0);
-        // patchCordEffect[0] = new AudioConnection(bitcrusher, *this);
-        patchCordEffect[0] = new AudioConnection(bitcrusher, effect);
-        patchCordEffect[1] = new AudioConnection(effect, *this);
-        // patchCordEffect[2] = new AudioConnection(env, 0, effect, 1);
+        patchCordEffect[0] = new AudioConnection(bitcrusher, distortion);
+        patchCordEffect[1] = new AudioConnection(distortion, *this);
 
         env.set(1, 1.0, attackMs);
         env.set(2, 0.0, decayMs);
@@ -90,10 +86,6 @@ class IO_AudioSynth : public AudioDumb {
         }
 
         setBitcrusher(0);
-        // effect.shape(WAVESHAPE_EXAMPLE,
-        //              sizeof(WAVESHAPE_EXAMPLE) /
-        //              sizeof(WAVESHAPE_EXAMPLE[0]));
-        // effect.setCombineMode(AudioEffectDigitalCombine::AND);
     }
 
     void init() {}
@@ -104,8 +96,13 @@ class IO_AudioSynth : public AudioDumb {
     }
 
     void setDistortion(int8_t direction) {
-        float amount = constrain(effect.amount + direction, 0, 1000);
-        effect.distortion(amount);
+        float amount = constrain(distortion.amount + direction, 0, 1000);
+        distortion.distortion(amount);
+    }
+
+    void setDistortionRange(int8_t direction) {
+        float range = constrain(distortion.range + direction, 1, 1000);
+        distortion.setRange(range);
     }
 
     void setModMs(byte state, int8_t direction) {

@@ -15,6 +15,7 @@
 class AudioEffectDistortion : public AudioEffectWaveshaper {
    public:
     float amount = 50;
+    float range = 20.0;
 
     AudioEffectDistortion(void) { distortion(50); };
 
@@ -37,10 +38,15 @@ class AudioEffectDistortion : public AudioEffectWaveshaper {
             for (u_int16_t i = 0; i < WAVESHAPE_SIZE; i++) {
                 float x = (float)i * 2.0 / (float)WAVESHAPE_SIZE - 1.0;
                 waveshapeData[i] =
-                    (3.0 + amount) * x * 20.0 * deg / (PI + amount * abs(x));
+                    (3 + amount) * x * range * deg / (PI + amount * abs(x));
             }
             shape(waveshapeData, WAVESHAPE_SIZE);
         }
+    }
+
+    void setRange(float _range) {
+        range = _range;
+        distortion(amount);
     }
 
     void enable() { bypassed = false; }

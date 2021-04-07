@@ -54,11 +54,11 @@ void displaySynth(Adafruit_SSD1306* d) {
 
     d->printf("EG %d|%d\n", (int)synth.attackMs, (int)synth.decayMs);
 
-    addToCursor(d, 0, 4);
+    addToCursor(d, 0, 2);
     d->printf("%s %.1fHz %.1f\n", getFilter(synth.currentFilter),
               synth.filterFrequency, synth.filterResonance);
 
-    addToCursor(d, 0, 4);
+    addToCursor(d, 0, 2);
     if (mcMode) {
         d->printf("ML%.2f|%.2f|%.2f|%.2f\n", synth.modLevel[0],
                   synth.modLevel[1], synth.modLevel[2], synth.modLevel[3]);
@@ -73,7 +73,10 @@ void displaySynth(Adafruit_SSD1306* d) {
                   (int)synth.modMs[7]);
     }
 
-    d->printf("Dist %d\n", (int)synth.effect.amount);
+    addToCursor(d, 0, 2);
+    d->printf("Dist %d range %d\n", (int)synth.distortion.amount,
+              (int)synth.distortion.range);
+    d->printf("Bitcrusher %d\n", (int)synth.xcrushBits);
 }
 
 #endif
