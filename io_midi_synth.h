@@ -18,7 +18,9 @@ void synthNoteOnHandler(byte channel, byte note, byte velocity) {
         } else if (note == 23 || note == 47) {
             // saveSynth(currentSynth);
         } else if (note == 20) {
-        }
+        } else if (note == 17 || note == 41) {
+            synth.toogleRectifier();
+        } 
     }
 }
 

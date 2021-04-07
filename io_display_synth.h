@@ -80,7 +80,8 @@ void displaySynth(Adafruit_SSD1306* d) {
     addToCursor(d, 0, 2);
     d->printf("Dist %d range %d\n", (int)synth.distortion.amount,
               (int)synth.distortion.range);
-    d->printf("Bitcrusher %d\n", (int)synth.xcrushBits);
+    d->printf("Bitcrusher %d %s\n", (int)synth.xcrushBits,
+              synth.rectifierOn ? "RectON" : "RectOFF");
 }
 
 #endif

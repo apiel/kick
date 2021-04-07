@@ -27,7 +27,7 @@ class IO_AudioSynth : public AudioDumb {
     Envelope<8> envMod;
     AudioEffectBitcrusher bitcrusher;
     AudioEffectDistortion distortion;
-    // AudioEffectRectifier effect; // might be useful
+    AudioEffectRectifier rectifier;
 
     byte currentWaveform = WAVEFORM_SINE;
     float frequency = 100.0;
@@ -47,13 +47,17 @@ class IO_AudioSynth : public AudioDumb {
     byte currentFilter = 0;
 
     byte xcrushBits = 12;
+    bool rectifierOn = false;
 
     AudioConnection* patchCordFilter[FILTER_TYPE_COUNT];
     AudioConnection* patchCordEnvToFilter;
     AudioConnection* patchCordWaveToEnv;
     AudioConnection* patchCordDcToEnvMod;
     AudioConnection* patchCordEnvModToWave;
-    AudioConnection* patchCordEffect[2];
+    AudioConnection* patchCordBitcrusher;
+    AudioConnection* patchCordDistortionToRectifier;
+    AudioConnection* patchCordDistortionToOutput;
+    AudioConnection* patchCordRectifier;
 
     IO_AudioSynth() {
         patchCordDcToEnvMod = new AudioConnection(dc, envMod);
@@ -63,8 +67,11 @@ class IO_AudioSynth : public AudioDumb {
         patchCordFilter[0] = new AudioConnection(filter, 0, bitcrusher, 0);
         patchCordFilter[1] = new AudioConnection(filter, 1, bitcrusher, 0);
         patchCordFilter[2] = new AudioConnection(filter, 2, bitcrusher, 0);
-        patchCordEffect[0] = new AudioConnection(bitcrusher, distortion);
-        patchCordEffect[1] = new AudioConnection(distortion, *this);
+        patchCordBitcrusher = new AudioConnection(bitcrusher, distortion);
+        patchCordDistortionToRectifier =
+            new AudioConnection(distortion, rectifier);
+        patchCordDistortionToOutput = new AudioConnection(distortion, *this);
+        patchCordRectifier = new AudioConnection(rectifier, *this);
 
         env.set(1, 1.0, attackMs);
         env.set(2, 0.0, decayMs);
@@ -86,9 +93,27 @@ class IO_AudioSynth : public AudioDumb {
         }
 
         setBitcrusher(0);
+        applyRectifier();
     }
 
     void init() {}
+
+    void toogleRectifier() {
+        rectifierOn = !rectifierOn;
+        applyRectifier();
+    }
+
+    void applyRectifier() {
+        patchCordDistortionToRectifier->disconnect();
+        patchCordDistortionToOutput->disconnect();
+        patchCordRectifier->disconnect();
+        if (rectifierOn) {
+            patchCordDistortionToRectifier->connect();
+            patchCordRectifier->connect();
+        } else {
+            patchCordDistortionToOutput->connect();
+        }
+    }
 
     void setBitcrusher(int8_t direction) {
         xcrushBits = constrain(xcrushBits + direction, 1, 16);
