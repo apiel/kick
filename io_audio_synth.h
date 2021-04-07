@@ -30,13 +30,13 @@ class IO_AudioSynth : public AudioDumb {
     // AudioEffectRectifier effect; // might be useful
 
     byte currentWaveform = WAVEFORM_SINE;
-    float frequency = 15.0;
+    float frequency = 100.0;
     float amplitude = 1.0;
 
     byte lastNote = 0;
 
     float attackMs = 10.0;
-    float decayMs = 80.0;
+    float decayMs = 240.0;
 
     float modMs[MOD_ENV_SIZE] = {5.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 5.0};
     float modLevel[MOD_ENV_SIZE] = {1.0, 0.8, 0.6, 0.4, 0.3, 0.2, 0.1, 0.0};

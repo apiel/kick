@@ -60,11 +60,15 @@ void displaySynth(Adafruit_SSD1306* d) {
 
     addToCursor(d, 0, 2);
     if (mcMode) {
+        d->fillRect(126, 28, 2, 36, WHITE);
+
         d->printf("ML%.2f|%.2f|%.2f|%.2f\n", synth.modLevel[0],
                   synth.modLevel[1], synth.modLevel[2], synth.modLevel[3]);
         d->printf("ML%.2f|%.2f|%.2f|%.2f\n", synth.modLevel[4],
                   synth.modLevel[5], synth.modLevel[6], synth.modLevel[7]);
     } else {
+        d->fillRect(126, 0, 2, 44, WHITE);
+
         d->printf("modMs %d|%d|%d|%d\n", (int)synth.modMs[0],
                   (int)synth.modMs[1], (int)synth.modMs[2],
                   (int)synth.modMs[3]);
