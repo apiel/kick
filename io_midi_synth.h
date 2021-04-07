@@ -33,9 +33,17 @@ void synthNoteOffHandler(byte channel, byte note, byte velocity) {
 void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
     if (channel == 11) {
         if (knob == 1) {
-            synth.setNextWaveform(direction);
+            if (mcMode) {
+                synth.setBitcrusher(direction);
+            } else {
+                synth.setNextWaveform(direction);
+            }
         } else if (knob == 2) {
-            synth.setFrequency(direction);
+            if (mcMode) {
+                synth.setDistortion(direction);
+            } else {
+                synth.setFrequency(direction);
+            }
         } else if (knob == 3) {
             synth.setAmplitude(direction);
         } else if (knob == 4) {

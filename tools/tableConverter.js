@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const NUM_CELLS = 256;
+// const NUM_CELLS = 256;
+const NUM_CELLS = 2048;
 
 const [, , target, dist] = process.argv;
 

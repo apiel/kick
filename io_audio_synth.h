@@ -6,6 +6,7 @@
 
 #include "arbitraryWaveform.h"
 #include "audio_dumb.h"
+#include "effect/AudioEffectDistortion.h"
 #include "envelope.h"
 #include "io_util.h"
 #include "note.h"
@@ -24,6 +25,10 @@ class IO_AudioSynth : public AudioDumb {
     AudioFilterStateVariable filter;
     AudioSynthWaveformDc dc;
     Envelope<8> envMod;
+    AudioEffectBitcrusher bitcrusher;
+    AudioEffectDistortion effect;
+    // AudioEffectRectifier effect; // might be useful
+    // AudioEffectDigitalCombine effect;
 
     byte currentWaveform = WAVEFORM_SINE;
     float frequency = 15.0;
@@ -42,20 +47,28 @@ class IO_AudioSynth : public AudioDumb {
     float filterResonance = 0.7;
     byte currentFilter = 0;
 
+    byte xcrushBits = 12;
+
     AudioConnection* patchCordFilter[FILTER_TYPE_COUNT];
     AudioConnection* patchCordEnvToFilter;
     AudioConnection* patchCordWaveToEnv;
     AudioConnection* patchCordDcToEnvMod;
     AudioConnection* patchCordEnvModToWave;
+    // AudioConnection* patchCordEffect[3];
+    AudioConnection* patchCordEffect[2];
 
     IO_AudioSynth() {
         patchCordDcToEnvMod = new AudioConnection(dc, envMod);
         patchCordEnvModToWave = new AudioConnection(envMod, waveform);
         patchCordWaveToEnv = new AudioConnection(waveform, env);
         patchCordEnvToFilter = new AudioConnection(env, filter);
-        patchCordFilter[0] = new AudioConnection(filter, 0, *this, 0);
-        patchCordFilter[1] = new AudioConnection(filter, 1, *this, 0);
-        patchCordFilter[2] = new AudioConnection(filter, 2, *this, 0);
+        patchCordFilter[0] = new AudioConnection(filter, 0, bitcrusher, 0);
+        patchCordFilter[1] = new AudioConnection(filter, 1, bitcrusher, 0);
+        patchCordFilter[2] = new AudioConnection(filter, 2, bitcrusher, 0);
+        // patchCordEffect[0] = new AudioConnection(bitcrusher, *this);
+        patchCordEffect[0] = new AudioConnection(bitcrusher, effect);
+        patchCordEffect[1] = new AudioConnection(effect, *this);
+        // patchCordEffect[2] = new AudioConnection(env, 0, effect, 1);
 
         env.set(1, 1.0, attackMs);
         env.set(2, 0.0, decayMs);
@@ -75,9 +88,25 @@ class IO_AudioSynth : public AudioDumb {
         for (byte n = 0; n < MOD_ENV_SIZE; n++) {
             envMod.set(n + 1, modLevel[n], modMs[n]);
         }
+
+        setBitcrusher(0);
+        // effect.shape(WAVESHAPE_EXAMPLE,
+        //              sizeof(WAVESHAPE_EXAMPLE) /
+        //              sizeof(WAVESHAPE_EXAMPLE[0]));
+        // effect.setCombineMode(AudioEffectDigitalCombine::AND);
     }
 
     void init() {}
+
+    void setBitcrusher(int8_t direction) {
+        xcrushBits = constrain(xcrushBits + direction, 1, 16);
+        bitcrusher.bits(xcrushBits);
+    }
+
+    void setDistortion(int8_t direction) {
+        float amount = constrain(effect.amount + direction, 0, 1000);
+        effect.distortion(amount);
+    }
 
     void setModMs(byte state, int8_t direction) {
         modMs[state] = constrain(modMs[state] + direction, 0.0, 11880.0);

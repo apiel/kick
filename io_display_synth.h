@@ -72,6 +72,8 @@ void displaySynth(Adafruit_SSD1306* d) {
                   (int)synth.modMs[5], (int)synth.modMs[6],
                   (int)synth.modMs[7]);
     }
+
+    d->printf("Dist %d\n", (int)synth.effect.amount);
 }
 
 #endif
