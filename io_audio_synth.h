@@ -10,6 +10,7 @@
 #include "envelope.h"
 #include "io_util.h"
 #include "note.h"
+#include "wavetable/AudioWaveTable.h"
 
 #define WAVEFORM_COUNT 9
 
@@ -20,7 +21,8 @@
 class IO_AudioSynth : public AudioDumb {
    protected:
    public:
-    AudioSynthWaveformModulated waveform;
+    // AudioSynthWaveformModulated waveform;
+    AudioWaveTable waveform;
     Envelope<2> env;
     AudioFilterStateVariable filter;
     AudioSynthWaveformDc dc;
@@ -83,8 +85,9 @@ class IO_AudioSynth : public AudioDumb {
 
         waveform.frequency(frequency);
         waveform.amplitude(amplitude);
-        waveform.begin(WAVEFORM_SINE);
-        waveform.arbitraryWaveform(arbitraryWaveform, 172.0);
+        // waveform.begin(WAVEFORM_SINE);
+        // waveform.arbitraryWaveform(arbitraryWaveform, 172.0);
+        waveform.arbitraryWaveform(arbitraryWaveform);
 
         dc.amplitude(0.5);
 
@@ -143,7 +146,7 @@ class IO_AudioSynth : public AudioDumb {
 
     void setNextWaveform(int8_t direction) {
         currentWaveform = mod(currentWaveform + direction, WAVEFORM_COUNT);
-        waveform.begin(currentWaveform);
+        // waveform.begin(currentWaveform);
     }
 
     void setFrequency(int8_t direction) {
