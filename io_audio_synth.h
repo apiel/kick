@@ -87,7 +87,7 @@ class IO_AudioSynth : public AudioDumb {
         waveform.amplitude(amplitude);
         // waveform.begin(WAVEFORM_SINE);
         // waveform.arbitraryWaveform(arbitraryWaveform, 172.0);
-        waveform.arbitraryWaveform(arbitraryWaveform);
+        // waveform.arbitraryWaveform(arbitraryWaveform);
 
         dc.amplitude(0.5);
 

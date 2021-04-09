@@ -32,3 +32,5 @@ if (data.length > NUM_CELLS) {
 }
 console.log(data.join(','));
 console.log(data.length);
+
+// https://www.rapidtables.com/tools/line-graph.html
