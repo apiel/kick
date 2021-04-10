@@ -4,19 +4,19 @@
 #include <Arduino.h>
 #include <Audio.h>
 
-#include "wavetable/sine256.h"
-#include "wavetable/kick06.h"
 #include "wavetable/guitar01.h"
+#include "wavetable/kick06.h"
+#include "wavetable/sine256.h"
 
 class AudioWaveTable : public AudioStream {
    public:
     AudioWaveTable(void) : AudioStream(2, inputQueueArray) {
         frequency(100.0);
         amplitude(1.0);
-        // setTable(sine256, WAVETABLE_SINE256_SIZE);
+        setTable(sine256, WAVETABLE_SINE256_SIZE);
         // setTable(kick06, WAVETABLE_KICK06_SIZE);
         // setTable(kick06, 256);
-        setTable(guitar01, WAVETABLE_GUITAR06_SIZE);
+        // setTable(guitar01, WAVETABLE_GUITAR06_SIZE);
     }
 
     AudioWaveTable *setTable(const int16_t *wavetablePtr, u_int16_t size) {
@@ -83,7 +83,8 @@ class AudioWaveTable : public AudioStream {
     void update(void) {
         audio_block_t *shapedata = receiveReadOnly(1);
         uint32_t priorphase = phasedata[AUDIO_BLOCK_SAMPLES - 1];
-        uint32_t ph = computePhase();
+        uint32_t ph;
+        computePhase();
 
         // If the amplitude is zero, no output, but phase still increments
         if (magnitude == 0) {
@@ -101,8 +102,8 @@ class AudioWaveTable : public AudioStream {
         uint32_t addToIndex = part * AUDIO_BLOCK_SAMPLES;
         for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
             ph = phasedata[i];
-            uint32_t scale = (ph >> 8) & 0xFFFF;
             uint32_t index = (ph >> 24) + addToIndex;
+            uint32_t scale = (ph >> 8) & 0xFFFF;
             int32_t val1 = *(wavetable + index) * scale;
             int32_t val2 = *(wavetable + index + 1) * (0x10000 - scale);
             *bp++ = multiply_32x32_rshift32(val1 + val2, magnitude);
@@ -127,6 +128,64 @@ class AudioWaveTable : public AudioStream {
     uint8_t modulation_type = 0;
     uint8_t part = 0;
     uint8_t partModulo = 0;
+    uint32_t (AudioWaveTable::*ptrComputePhase)(audio_block_t *moddata);
+
+    void computePhase() {
+        audio_block_t *moddata = receiveReadOnly(0);
+        if (moddata) {
+            if (modulation_type == 0) {
+                ptrComputePhase = &AudioWaveTable::computeFrequencyModulation;
+            } else {
+                ptrComputePhase = &AudioWaveTable::computePhaseModulation;
+            }
+        } else {
+            ptrComputePhase = &AudioWaveTable::computeNoModulation;
+        }
+        for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+            phasedata[i] = (this->*ptrComputePhase)(moddata);
+        }
+        if (moddata) release(moddata);
+    }
+
+    uint32_t computeNoModulation(audio_block_t *notUsed) {
+        uint32_t ph = phase_accumulator;
+        phase_accumulator += phase_increment;
+        return ph;
+    }
+
+    uint32_t computePhaseModulation(audio_block_t *moddata) {
+        int16_t *bp = moddata->data;
+        // more than +/- 180 deg shift by 32 bit overflow of "n"
+        uint32_t n = ((uint32_t)(*bp++)) * modulation_factor;
+        uint32_t ph = phase_accumulator + n;
+        phase_accumulator += phase_increment;
+        return ph;
+    }
+
+    uint32_t computeFrequencyModulation(audio_block_t *moddata) {
+        // Frequency Modulation
+        int16_t *bp = moddata->data;
+        int32_t n = (*bp++) * modulation_factor;  // n is # of octaves to mod
+        int32_t ipart = n >> 27;                  // 4 integer bits
+        n &= 0x7FFFFFF;                           // 27 fractional bits
+
+        // exp2 algorithm by Laurent de Soras
+        // https://www.musicdsp.org/en/latest/Other/106-fast-exp2-approximation.html
+        n = (n + 134217728) << 3;
+        n = multiply_32x32_rshift32_rounded(n, n);
+        n = multiply_32x32_rshift32_rounded(n, 715827883) << 3;
+        n = n + 715827882;
+
+        uint32_t scale = n >> (14 - ipart);
+        uint64_t phstep = (uint64_t)phase_increment * scale;
+        uint32_t phstep_msw = phstep >> 32;
+        if (phstep_msw < 0x7FFE) {
+            phase_accumulator += phstep >> 16;
+        } else {
+            phase_accumulator += 0x7FFE0000;
+        }
+        return phase_accumulator;
+    }
 
     void applyToneOffset(int16_t *bp) {
         if (tone_offset) {
@@ -136,72 +195,6 @@ class AudioWaveTable : public AudioStream {
                 *bp++ = signed_saturate_rshift(val1 + tone_offset, 16, 0);
             } while (bp < end);
         }
-    }
-
-    uint32_t computePhase() {
-        uint32_t ph = phase_accumulator;
-        const uint32_t inc = phase_increment;
-        audio_block_t *moddata = receiveReadOnly(0);
-        if (moddata) {
-            if (modulation_type == 0) {
-                ph = computeFrequencyModulation(moddata, inc, ph);
-            } else {
-                ph = computePhaseModulation(moddata, inc, ph);
-            }
-            release(moddata);
-        } else {
-            // No Modulation Input
-            for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-                phasedata[i] = ph;
-                ph += inc;
-            }
-        }
-        phase_accumulator = ph;
-        return ph;
-    }
-
-    uint32_t computePhaseModulation(audio_block_t *moddata, const uint32_t inc,
-                                    uint32_t ph) {
-        // Phase Modulation
-        int16_t *bp = moddata->data;
-        for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            // more than +/- 180 deg shift by 32 bit overflow of "n"
-            uint32_t n = ((uint32_t)(*bp++)) * modulation_factor;
-            phasedata[i] = ph + n;
-            ph += inc;
-        }
-        return ph;
-    }
-
-    uint32_t computeFrequencyModulation(audio_block_t *moddata,
-                                        const uint32_t inc, uint32_t ph) {
-        // Frequency Modulation
-        int16_t *bp = moddata->data;
-        for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            int32_t n =
-                (*bp++) * modulation_factor;  // n is # of octaves to mod
-            int32_t ipart = n >> 27;          // 4 integer bits
-            n &= 0x7FFFFFF;                   // 27 fractional bits
-
-            // exp2 algorithm by Laurent de Soras
-            // https://www.musicdsp.org/en/latest/Other/106-fast-exp2-approximation.html
-            n = (n + 134217728) << 3;
-
-            n = multiply_32x32_rshift32_rounded(n, n);
-            n = multiply_32x32_rshift32_rounded(n, 715827883) << 3;
-            n = n + 715827882;
-
-            uint32_t scale = n >> (14 - ipart);
-            uint64_t phstep = (uint64_t)inc * scale;
-            uint32_t phstep_msw = phstep >> 32;
-            if (phstep_msw < 0x7FFE) {
-                ph += phstep >> 16;
-            } else {
-                ph += 0x7FFE0000;
-            }
-            phasedata[i] = ph;
-        }
-        return ph;
     }
 };
 
