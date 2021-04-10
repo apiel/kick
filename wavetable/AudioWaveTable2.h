@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <Audio.h>
 
+#include "../note.h"  // to remove
 #include "wavetable/guitar01.h"
 #include "wavetable/kick06.h"
 #include "wavetable/sine256.h"
@@ -40,8 +41,20 @@ class AudioWaveTable : public AudioStream {
         } else if (freq > AUDIO_SAMPLE_RATE_EXACT / 2) {
             freq = AUDIO_SAMPLE_RATE_EXACT / 2;
         }
+        // 4294967296 = 2^32 where 2147483647 is max 32 bit number
+        // so 2 * 2147483647 = 4294967294
+        // 4294967296/44100 = 97391
+        // AUDIO_SAMPLE_RATE_EXACT 44100.0 max frequency is 44100 / 2
         phase_increment = freq * (4294967296.0 / AUDIO_SAMPLE_RATE_EXACT);
+        // 0x7FFE0000u = 2147352576 more or less the biggest 32 bit number
         if (phase_increment > 0x7FFE0000u) phase_increment = 0x7FFE0000;
+
+        // to remove
+        if (freq <= 0.0) {
+            yo_phase_increment = 0.0;
+        } else {
+            yo_phase_increment = freq / yo_baseFreq;
+        }
         return this;
     }
 
@@ -114,11 +127,22 @@ class AudioWaveTable : public AudioStream {
         }
         for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
             uint32_t ph = (this->*ptrComputeModulation)(moddata);
+            // (97391 * 0) >> 24 = 0
+            // (97391 * 10) >> 24 = 0
+            // (97391 * 11000) >> 24 = 63
+            // (97391 * 22000) >> 24 = 127
             uint32_t index = (ph >> 24) + addToIndex;
-            uint32_t scale = (ph >> 8) & 0xFFFF;
-            int32_t val1 = *(wavetable + index) * scale;
-            int32_t val2 = *(wavetable + index + 1) * (0x10000 - scale);
-            *bp++ = multiply_32x32_rshift32(val1 + val2, magnitude);
+            // uint32_t scale = (ph >> 8) & 0xFFFF;
+            // int32_t val1 = *(wavetable + index) * scale;
+            // int32_t val2 = *(wavetable + index + 1) * (0x10000 - scale);
+            // *bp++ = multiply_32x32_rshift32(val1 + val2, magnitude);
+
+            yo_phase_accumulator += yo_phase_increment;
+            if ((uint32_t)yo_phase_accumulator > WAVETABLE_SINE512_SIZE) {
+                yo_phase_accumulator = 0;
+            }
+            // Serial.printf("yo %d index %d\n", (uint32_t)yo_phase_accumulator, index);
+            *bp++ = *(wavetable + (uint32_t)yo_phase_accumulator);
         }
 
         applyToneOffset(block->data);
@@ -139,6 +163,10 @@ class AudioWaveTable : public AudioStream {
     uint8_t part = 0;
     uint8_t partModulo = 0;
     uint32_t (AudioWaveTable::*ptrComputeModulation)(audio_block_t *moddata);
+
+    float yo_baseFreq = NOTE_FREQ[_C4];
+    float yo_phase_accumulator;
+    float yo_phase_increment;
 
     void assignModulation(audio_block_t *moddata) {
         if (moddata) {

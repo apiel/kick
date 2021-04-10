@@ -10,3 +10,5 @@
 - https://stackoverflow.com/questions/22312841/waveshaper-node-in-webaudio-how-to-emulate-distortion/22313408#22313408
 
 - EQ
+
+- Move modulation in different view visible with MC...
