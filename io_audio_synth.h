@@ -10,8 +10,8 @@
 #include "envelope.h"
 #include "io_util.h"
 #include "note.h"
-// #include "wavetable/AudioWaveTable.h"
-#include "wavetable/AudioWaveTable2.h"
+#include "wavetable/AudioWaveTable.h"
+// #include "wavetable/AudioWaveTable2.h"
 
 #define WAVEFORM_COUNT 9
 

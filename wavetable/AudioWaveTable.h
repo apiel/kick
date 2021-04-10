@@ -11,7 +11,7 @@
 
 class AudioWaveTable : public AudioStream {
    public:
-    uint32_t startPart = 0;
+    uint32_t start = 0;
 
     AudioWaveTable(void) : AudioStream(2, inputQueueArray) {
         frequency(100.0);
@@ -28,7 +28,7 @@ class AudioWaveTable : public AudioStream {
     AudioWaveTable *setTable(const int16_t *wavetablePtr, u_int16_t size) {
         // partModulo = size / AUDIO_BLOCK_SAMPLES;
         partModulo = size / (AUDIO_BLOCK_SAMPLES * 2);
-        startPart = 0;
+        start = 0;
         part = 0;
         wavetable = wavetablePtr;
         return this;
@@ -87,8 +87,8 @@ class AudioWaveTable : public AudioStream {
         return this;
     }
 
-    AudioWaveTable *setStartPart(int _startPart) {
-        startPart = _startPart < 0 ? 0 : _startPart;
+    AudioWaveTable *setStart(int _start) {
+        start = _start < 0 ? 0 : _start;
     }
 
     void update(void) {
@@ -107,8 +107,8 @@ class AudioWaveTable : public AudioStream {
 
         int16_t *bp = block->data;
 
-        uint32_t addToIndex = startPart - 1;
-        if (startPart == 0) {
+        uint32_t addToIndex = start - 1;
+        if (start == 0) {
             addToIndex = part * AUDIO_BLOCK_SAMPLES * 2;
             part = (part + 1) % partModulo;
         }
