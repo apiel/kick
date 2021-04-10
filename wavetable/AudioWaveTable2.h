@@ -34,9 +34,6 @@ class AudioWaveTable : public AudioStream {
     }
 
     AudioWaveTable *setFrequency(float freq) {
-        modulation_phase_increment = constrain(
-            freq * (4294967296.0 / AUDIO_SAMPLE_RATE_EXACT), 0, 0x7FFE0000u);
-
         if (freq <= 0.0) {
             phase_increment = 0.0;
         } else {
@@ -81,12 +78,11 @@ class AudioWaveTable : public AudioStream {
         int16_t *bp = block->data;
         for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
             phase_accumulator += phase_increment;
+            // chould we use modulo
             if ((uint32_t)phase_accumulator > WAVETABLE_SINE512_SIZE) {
                 phase_accumulator = start;
             }
-
             computeFrequencyModulation(moddata);
-
             *bp++ = (*(wavetable + (uint32_t)phase_accumulator)) * amplitude;
         }
 
@@ -97,7 +93,6 @@ class AudioWaveTable : public AudioStream {
 
    private:
     audio_block_t *inputQueueArray[2];
-    uint32_t modulation_phase_increment = 0;
     uint32_t modulation_factor = 32768;
     int32_t amplitude = 0;
     const int16_t *wavetable = NULL;
@@ -110,32 +105,16 @@ class AudioWaveTable : public AudioStream {
     void computeFrequencyModulation(audio_block_t *moddata) {
         if (moddata) {
             int16_t *md = moddata->data;
-            int32_t n =
-                (*md++) * modulation_factor;  // n is # of octaves to mod
-            int32_t ipart = n >> 27;          // 4 integer bits
-            n &= 0x7FFFFFF;                   // 27 fractional bits
-
-            // exp2 algorithm by Laurent de Soras
-            // https://www.musicdsp.org/en/latest/Other/106-fast-exp2-approximation.html
-            n = (n + 134217728) << 3;
-            n = multiply_32x32_rshift32_rounded(n, n);
-            n = multiply_32x32_rshift32_rounded(n, 715827883) << 3;
-            n = n + 715827882;
-
-            uint32_t scale = n >> (14 - ipart);
-            uint64_t phstep = (uint64_t)modulation_phase_increment * scale;
-            uint32_t phstep_msw = phstep >> 32;
-            if (phstep_msw < 0x7FFE) {
-                phase_accumulator += (phstep >> 16) >> 24;
-            } else {
-                phase_accumulator += 0x7FFE0000 >> 24;
-            }
-
-            // phase_increment += ((*md++) >> 24) / baseFreq;
-
-            // chould we use modulo
-            if ((uint32_t)phase_accumulator > wavesize) {
-                phase_accumulator = start;
+            int32_t val = *md++;
+            if (val) {
+                float n = (float)val / 16384.0;
+                // but this is not right maybe need to do something with octave
+                // or freq
+                phase_accumulator += n;
+                // chould we use modulo
+                if ((uint32_t)phase_accumulator > wavesize) {
+                    phase_accumulator = start;
+                }
             }
         }
     }
