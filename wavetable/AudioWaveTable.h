@@ -7,6 +7,7 @@
 #include "wavetable/guitar01.h"
 #include "wavetable/kick06.h"
 #include "wavetable/sine256.h"
+#include "wavetable/sine512.h"
 
 class AudioWaveTable : public AudioStream {
    public:
@@ -14,6 +15,8 @@ class AudioWaveTable : public AudioStream {
         frequency(100.0);
         amplitude(1.0);
         setTable(sine256, WAVETABLE_SINE256_SIZE);
+        // setTable(sine512, WAVETABLE_SINE512_SIZE);
+        // setTable(sine512, 256);
         // setTable(kick06, WAVETABLE_KICK06_SIZE);
         // setTable(kick06, 256);
         // setTable(guitar01, WAVETABLE_GUITAR06_SIZE);
@@ -81,17 +84,13 @@ class AudioWaveTable : public AudioStream {
     }
 
     void update(void) {
-        audio_block_t *shapedata = receiveReadOnly(1);
-        
-        // If the amplitude is zero, no output, but phase still increments
         if (magnitude == 0) {
-            if (shapedata) release(shapedata);
+            phase_accumulator += phase_increment * AUDIO_BLOCK_SAMPLES;
             return;
         }
-
         audio_block_t *block = allocate();
         if (!block) {
-            if (shapedata) release(shapedata);
+            phase_accumulator += phase_increment * AUDIO_BLOCK_SAMPLES;
             return;
         }
 
@@ -100,7 +99,7 @@ class AudioWaveTable : public AudioStream {
 
         int16_t *bp = block->data;
 
-        uint32_t addToIndex = part * AUDIO_BLOCK_SAMPLES;
+        uint32_t addToIndex = part * AUDIO_BLOCK_SAMPLES * 2;
         for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
             uint32_t ph = (this->*ptrComputeModulation)(moddata);
             uint32_t index = (ph >> 24) + addToIndex;
@@ -112,7 +111,6 @@ class AudioWaveTable : public AudioStream {
         part = (part + 1) % partModulo;
 
         applyToneOffset(block->data);
-        if (shapedata) release(shapedata);
         transmit(block, 0);
         release(block);
         if (moddata) release(moddata);

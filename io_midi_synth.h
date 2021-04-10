@@ -19,8 +19,12 @@ void synthNoteOnHandler(byte channel, byte note, byte velocity) {
             // saveSynth(currentSynth);
         } else if (note == 20) {
         } else if (note == 17 || note == 41) {
-            synth.toogleRectifier();
-        } 
+            if (mcMode) {
+                synth.toggleRectifier();
+            } else {
+                synth.toggleModulation();
+            }
+        }
     }
 }
 

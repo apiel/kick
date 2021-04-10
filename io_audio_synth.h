@@ -31,6 +31,8 @@ class IO_AudioSynth : public AudioDumb {
     AudioEffectDistortion distortion;
     AudioEffectRectifier rectifier;
 
+    bool modulationOn = true;
+
     byte currentWaveform = WAVEFORM_SINE;
     float frequency = 100.0;
     float amplitude = 1.0;
@@ -97,11 +99,12 @@ class IO_AudioSynth : public AudioDumb {
 
         setBitcrusher(0);
         applyRectifier();
+        applyModulation();
     }
 
     void init() {}
 
-    void toogleRectifier() {
+    void toggleRectifier() {
         rectifierOn = !rectifierOn;
         applyRectifier();
     }
@@ -115,6 +118,21 @@ class IO_AudioSynth : public AudioDumb {
             patchCordRectifier->connect();
         } else {
             patchCordDistortionToOutput->connect();
+        }
+    }
+
+    void toggleModulation() {
+        modulationOn = !modulationOn;
+        applyModulation();
+    }
+
+    void applyModulation() {
+        if (modulationOn) {
+            patchCordDcToEnvMod->connect();
+            patchCordEnvModToWave->connect();
+        } else {
+            patchCordDcToEnvMod->disconnect();
+            patchCordEnvModToWave->disconnect();
         }
     }
 
@@ -134,14 +152,18 @@ class IO_AudioSynth : public AudioDumb {
     }
 
     void setModMs(byte state, int8_t direction) {
-        modMs[state] = constrain(modMs[state] + direction, 0.0, 11880.0);
-        envMod.set(state + 1, modLevel[state], modMs[state]);
+        if (modulationOn) {
+            modMs[state] = constrain(modMs[state] + direction, 0.0, 11880.0);
+            envMod.set(state + 1, modLevel[state], modMs[state]);
+        }
     }
 
     void setModLevel(byte state, int8_t direction) {
-        modLevel[state] =
-            constrain(modLevel[state] + direction * 0.01, 0.0, 1.0);
-        envMod.set(state + 1, modLevel[state], modMs[state]);
+        if (modulationOn) {
+            modLevel[state] =
+                constrain(modLevel[state] + direction * 0.01, 0.0, 1.0);
+            envMod.set(state + 1, modLevel[state], modMs[state]);
+        }
     }
 
     void setNextWaveform(int8_t direction) {
