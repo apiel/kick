@@ -58,7 +58,7 @@ void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
             }
         } else if (knob == 4) {
             if (mcMode) {
-                synth.setWaveStartPart(direction);
+                synth.setWaveStart(direction);
             } else {
                 synth.setCurrentFilter(direction);
             }

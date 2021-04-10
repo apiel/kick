@@ -137,8 +137,8 @@ class IO_AudioSynth : public AudioDumb {
         }
     }
 
-    void setWaveStartPart(int8_t direction) {
-        waveform.setStartPart(waveform.startPart + direction);
+    void setWaveStart(int8_t direction) {
+        waveform.setStart(waveform.start + direction);
     }
 
     void setBitcrusher(int8_t direction) {
