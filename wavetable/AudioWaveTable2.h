@@ -116,7 +116,7 @@ class AudioWaveTable : public AudioStream {
         }
 
         audio_block_t *moddata = receiveReadOnly(0);
-        assignModulation(moddata);
+        // assignModulation(moddata);
 
         int16_t *bp = block->data;
 
@@ -126,23 +126,46 @@ class AudioWaveTable : public AudioStream {
             part = (part + 1) % partModulo;
         }
         for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            uint32_t ph = (this->*ptrComputeModulation)(moddata);
-            // (97391 * 0) >> 24 = 0
-            // (97391 * 10) >> 24 = 0
-            // (97391 * 11000) >> 24 = 63
-            // (97391 * 22000) >> 24 = 127
-            uint32_t index = (ph >> 24) + addToIndex;
-            // uint32_t scale = (ph >> 8) & 0xFFFF;
-            // int32_t val1 = *(wavetable + index) * scale;
-            // int32_t val2 = *(wavetable + index + 1) * (0x10000 - scale);
-            // *bp++ = multiply_32x32_rshift32(val1 + val2, magnitude);
-
             yo_phase_accumulator += yo_phase_increment;
             if ((uint32_t)yo_phase_accumulator > WAVETABLE_SINE512_SIZE) {
                 yo_phase_accumulator = 0;
             }
-            // Serial.printf("yo %d index %d\n", (uint32_t)yo_phase_accumulator, index);
+
+if (moddata) {
+    int16_t *md = moddata->data;
+    int32_t n = (*md++) * modulation_factor;  // n is # of octaves to mod
+    int32_t ipart = n >> 27;                  // 4 integer bits
+    n &= 0x7FFFFFF;                           // 27 fractional bits
+
+    // exp2 algorithm by Laurent de Soras
+    // https://www.musicdsp.org/en/latest/Other/106-fast-exp2-approximation.html
+    n = (n + 134217728) << 3;
+    n = multiply_32x32_rshift32_rounded(n, n);
+    n = multiply_32x32_rshift32_rounded(n, 715827883) << 3;
+    n = n + 715827882;
+
+    uint32_t scale = n >> (14 - ipart);
+    uint64_t phstep = (uint64_t)phase_increment * scale;
+    uint32_t phstep_msw = phstep >> 32;
+    if (phstep_msw < 0x7FFE) {
+        yo_phase_accumulator += (phstep >> 16) >> 24;
+    } else {
+        yo_phase_accumulator += 0x7FFE0000 >> 24;
+    }
+}
+
+
             *bp++ = *(wavetable + (uint32_t)yo_phase_accumulator);
+            
+            // uint32_t mod = moddata ? moddata->data[i] : 0;
+            // *bp++ = *(wavetable + (uint32_t)yo_phase_accumulator) + mod;
+            // if (mod)
+            //     Serial.printf("yo %d + %d\n",
+            //                   *(wavetable + (uint32_t)yo_phase_accumulator),
+            //                   mod);
+
+            // block->data[i] = (int16_t)(
+            //     (data[(uint32_t)phase_accumulator] + mod) * magnitude);
         }
 
         applyToneOffset(block->data);
