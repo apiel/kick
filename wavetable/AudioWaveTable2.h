@@ -46,12 +46,7 @@ class AudioWaveTable : public AudioStream {
     }
 
     AudioWaveTable *setAmplitude(float n) {  // 0 to 1.0
-        if (n < 0) {
-            n = 0;
-        } else if (n > 1.0) {
-            n = 1.0;
-        }
-        magnitude = n * 65536.0;
+        amplitude = constrain(n, 0.0, 1.0);
         return this;
     }
 
@@ -71,7 +66,7 @@ class AudioWaveTable : public AudioStream {
     }
 
     void update(void) {
-        if (magnitude == 0) {
+        if (amplitude == 0) {
             phase_accumulator += phase_increment * AUDIO_BLOCK_SAMPLES;
             return;
         }
@@ -92,7 +87,7 @@ class AudioWaveTable : public AudioStream {
 
             computeFrequencyModulation(moddata);
 
-            *bp++ = *(wavetable + (uint32_t)phase_accumulator);
+            *bp++ = (*(wavetable + (uint32_t)phase_accumulator)) * amplitude;
         }
 
         transmit(block, 0);
@@ -104,7 +99,7 @@ class AudioWaveTable : public AudioStream {
     audio_block_t *inputQueueArray[2];
     uint32_t modulation_phase_increment = 0;
     uint32_t modulation_factor = 32768;
-    int32_t magnitude = 0;
+    int32_t amplitude = 0;
     const int16_t *wavetable = NULL;
     uint32_t wavesize = 0;
 
