@@ -15,8 +15,8 @@ class AudioWaveTable : public AudioStream {
     uint32_t start = 0;
 
     AudioWaveTable(void) : AudioStream(2, inputQueueArray) {
-        frequency(100.0);
-        amplitude(1.0);
+        setFrequency(100.0);
+        setAmplitude(1.0);
         // setTable(sine256, WAVETABLE_SINE256_SIZE);
         setTable(sine512, WAVETABLE_SINE512_SIZE);
         // setTable(sine512, 256);
@@ -33,11 +33,10 @@ class AudioWaveTable : public AudioStream {
         return this;
     }
 
-    AudioWaveTable *frequency(float freq) {
+    AudioWaveTable *setFrequency(float freq) {
         modulation_phase_increment = constrain(
             freq * (4294967296.0 / AUDIO_SAMPLE_RATE_EXACT), 0, 0x7FFE0000u);
 
-        // to remove
         if (freq <= 0.0) {
             phase_increment = 0.0;
         } else {
@@ -46,7 +45,7 @@ class AudioWaveTable : public AudioStream {
         return this;
     }
 
-    AudioWaveTable *amplitude(float n) {  // 0 to 1.0
+    AudioWaveTable *setAmplitude(float n) {  // 0 to 1.0
         if (n < 0) {
             n = 0;
         } else if (n > 1.0) {
