@@ -82,10 +82,7 @@ class AudioWaveTable : public AudioStream {
 
     void update(void) {
         audio_block_t *shapedata = receiveReadOnly(1);
-        uint32_t priorphase = phasedata[AUDIO_BLOCK_SAMPLES - 1];
-        uint32_t ph;
-        computePhase();
-
+        
         // If the amplitude is zero, no output, but phase still increments
         if (magnitude == 0) {
             if (shapedata) release(shapedata);
@@ -97,11 +94,15 @@ class AudioWaveTable : public AudioStream {
             if (shapedata) release(shapedata);
             return;
         }
+
+        audio_block_t *moddata = receiveReadOnly(0);
+        assignModulation(moddata);
+
         int16_t *bp = block->data;
 
         uint32_t addToIndex = part * AUDIO_BLOCK_SAMPLES;
         for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            ph = phasedata[i];
+            uint32_t ph = (this->*ptrComputeModulation)(moddata);
             uint32_t index = (ph >> 24) + addToIndex;
             uint32_t scale = (ph >> 8) & 0xFFFF;
             int32_t val1 = *(wavetable + index) * scale;
@@ -114,6 +115,7 @@ class AudioWaveTable : public AudioStream {
         if (shapedata) release(shapedata);
         transmit(block, 0);
         release(block);
+        if (moddata) release(moddata);
     }
 
    private:
@@ -123,28 +125,23 @@ class AudioWaveTable : public AudioStream {
     uint32_t modulation_factor = 32768;
     int32_t magnitude = 0;
     const int16_t *wavetable = NULL;
-    uint32_t phasedata[AUDIO_BLOCK_SAMPLES];
     int16_t tone_offset = 0;
     uint8_t modulation_type = 0;
     uint8_t part = 0;
     uint8_t partModulo = 0;
-    uint32_t (AudioWaveTable::*ptrComputePhase)(audio_block_t *moddata);
+    uint32_t (AudioWaveTable::*ptrComputeModulation)(audio_block_t *moddata);
 
-    void computePhase() {
-        audio_block_t *moddata = receiveReadOnly(0);
+    void assignModulation(audio_block_t *moddata) {
         if (moddata) {
             if (modulation_type == 0) {
-                ptrComputePhase = &AudioWaveTable::computeFrequencyModulation;
+                ptrComputeModulation =
+                    &AudioWaveTable::computeFrequencyModulation;
             } else {
-                ptrComputePhase = &AudioWaveTable::computePhaseModulation;
+                ptrComputeModulation = &AudioWaveTable::computePhaseModulation;
             }
         } else {
-            ptrComputePhase = &AudioWaveTable::computeNoModulation;
+            ptrComputeModulation = &AudioWaveTable::computeNoModulation;
         }
-        for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            phasedata[i] = (this->*ptrComputePhase)(moddata);
-        }
-        if (moddata) release(moddata);
     }
 
     uint32_t computeNoModulation(audio_block_t *notUsed) {
