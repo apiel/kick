@@ -19,11 +19,8 @@ class AudioWaveTable : public AudioStream {
         setAmplitude(1.0);
         // setTable(sine256, WAVETABLE_SINE256_SIZE);
         setTable(sine512, WAVETABLE_SINE512_SIZE);
-        // setTable(sine512, 256);
         // setTable(kick06, WAVETABLE_KICK06_SIZE);
-        // setTable(kick06, 256);
         // setTable(guitar01, WAVETABLE_GUITAR06_SIZE);
-        // setTable(guitar01, 256);
     }
 
     AudioWaveTable *setTable(const int16_t *wavetablePtr, u_int16_t size) {

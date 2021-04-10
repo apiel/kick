@@ -18,15 +18,11 @@ class AudioWaveTable : public AudioStream {
         setAmplitude(1.0);
         // setTable(sine256, WAVETABLE_SINE256_SIZE);
         setTable(sine512, WAVETABLE_SINE512_SIZE);
-        // setTable(sine512, 256);
         // setTable(kick06, WAVETABLE_KICK06_SIZE);
-        // setTable(kick06, 256);
         // setTable(guitar01, WAVETABLE_GUITAR06_SIZE);
-        // setTable(guitar01, 256);
     }
 
     AudioWaveTable *setTable(const int16_t *wavetablePtr, u_int16_t size) {
-        // partModulo = size / AUDIO_BLOCK_SAMPLES;
         partModulo = size / (AUDIO_BLOCK_SAMPLES * 2);
         start = 0;
         part = 0;
@@ -35,61 +31,35 @@ class AudioWaveTable : public AudioStream {
     }
 
     AudioWaveTable *setFrequency(float freq) {
-        if (freq < 0.0) {
-            freq = 0.0;
-        } else if (freq > AUDIO_SAMPLE_RATE_EXACT / 2) {
-            freq = AUDIO_SAMPLE_RATE_EXACT / 2;
-        }
-        phase_increment = freq * (4294967296.0 / AUDIO_SAMPLE_RATE_EXACT);
-        if (phase_increment > 0x7FFE0000u) phase_increment = 0x7FFE0000;
+        phase_increment = constrain(
+            freq * (4294967296.0 / AUDIO_SAMPLE_RATE_EXACT), 0.0, 0x7FFE0000u);
         return this;
     }
 
     AudioWaveTable *setAmplitude(float n) {  // 0 to 1.0
-        if (n < 0) {
-            n = 0;
-        } else if (n > 1.0) {
-            n = 1.0;
-        }
-        magnitude = n * 65536.0;
+        magnitude = constrain(n, 0.0, 1.0) * 65536.0;
         return this;
     }
 
     AudioWaveTable *offset(float n) {
-        if (n < -1.0) {
-            n = -1.0;
-        } else if (n > 1.0) {
-            n = 1.0;
-        }
-        tone_offset = n * 32767.0;
+        tone_offset = constrain(n, -1.0, 1.0) * 32767.0;
         return this;
     }
 
     AudioWaveTable *frequencyModulation(float octaves) {
-        if (octaves > 12.0) {
-            octaves = 12.0;
-        } else if (octaves < 0.1) {
-            octaves = 0.1;
-        }
-        modulation_factor = octaves * 4096.0;
+        modulation_factor = constrain(octaves, 0.1, 12.0) * 4096.0;
         modulation_type = 0;
         return this;
     }
 
     AudioWaveTable *phaseModulation(float degrees) {
-        if (degrees > 9000.0) {
-            degrees = 9000.0;
-        } else if (degrees < 30.0) {
-            degrees = 30.0;
-        }
-        modulation_factor = degrees * (65536.0 / 180.0);
+        modulation_factor =
+            constrain(degrees, 30.0, 9000.0) * (65536.0 / 180.0);
         modulation_type = 1;
         return this;
     }
 
-    AudioWaveTable *setStart(int _start) {
-        start = _start < 0 ? 0 : _start;
-    }
+    AudioWaveTable *setStart(int _start) { start = _start < 0 ? 0 : _start; }
 
     void update(void) {
         if (magnitude == 0) {
