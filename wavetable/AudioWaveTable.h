@@ -22,10 +22,9 @@ class AudioWaveTable : public AudioStream {
         // setTable(guitar01, WAVETABLE_GUITAR06_SIZE);
     }
 
+    // size is not necessary
     AudioWaveTable *setTable(const int16_t *wavetablePtr, u_int16_t size) {
-        partModulo = size / (AUDIO_BLOCK_SAMPLES * 2);
         start = 0;
-        part = 0;
         wavetable = wavetablePtr;
         return this;
     }
@@ -59,7 +58,10 @@ class AudioWaveTable : public AudioStream {
         return this;
     }
 
-    AudioWaveTable *setStart(int _start) { start = _start < 0 ? 0 : _start; }
+    AudioWaveTable *setStart(int _start) {
+        start = _start < 0 ? 0 : _start;
+        return this;
+    }
 
     void update(void) {
         if (magnitude == 0) {
@@ -77,14 +79,9 @@ class AudioWaveTable : public AudioStream {
 
         int16_t *bp = block->data;
 
-        uint32_t addToIndex = start - 1;
-        if (start == 0) {
-            addToIndex = part * AUDIO_BLOCK_SAMPLES * 2;
-            part = (part + 1) % partModulo;
-        }
         for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
             uint32_t ph = (this->*ptrComputeModulation)(moddata);
-            uint32_t index = (ph >> 24) + addToIndex;
+            uint32_t index = (ph >> 24) + start;
             uint32_t scale = (ph >> 8) & 0xFFFF;
             int32_t val1 = *(wavetable + index) * scale;
             int32_t val2 = *(wavetable + index + 1) * (0x10000 - scale);
@@ -106,8 +103,6 @@ class AudioWaveTable : public AudioStream {
     const int16_t *wavetable = NULL;
     int16_t tone_offset = 0;
     uint8_t modulation_type = 0;
-    uint8_t part = 0;
-    uint8_t partModulo = 0;
     uint32_t (AudioWaveTable::*ptrComputeModulation)(audio_block_t *moddata);
 
     void assignModulation(audio_block_t *moddata) {
