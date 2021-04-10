@@ -136,6 +136,10 @@ class IO_AudioSynth : public AudioDumb {
         }
     }
 
+    void setWaveStartPart(int8_t direction) {
+        waveform.setStartPart(waveform.startPart + direction);
+    }
+
     void setBitcrusher(int8_t direction) {
         xcrushBits = constrain(xcrushBits + direction, 1, 16);
         bitcrusher.bits(xcrushBits);

@@ -11,20 +11,24 @@
 
 class AudioWaveTable : public AudioStream {
    public:
+    uint32_t startPart = 0;
+
     AudioWaveTable(void) : AudioStream(2, inputQueueArray) {
         frequency(100.0);
         amplitude(1.0);
-        setTable(sine256, WAVETABLE_SINE256_SIZE);
+        // setTable(sine256, WAVETABLE_SINE256_SIZE);
         // setTable(sine512, WAVETABLE_SINE512_SIZE);
         // setTable(sine512, 256);
-        // setTable(kick06, WAVETABLE_KICK06_SIZE);
+        setTable(kick06, WAVETABLE_KICK06_SIZE);
         // setTable(kick06, 256);
         // setTable(guitar01, WAVETABLE_GUITAR06_SIZE);
+        // setTable(guitar01, 256);
     }
 
     AudioWaveTable *setTable(const int16_t *wavetablePtr, u_int16_t size) {
         // partModulo = size / AUDIO_BLOCK_SAMPLES;
         partModulo = size / (AUDIO_BLOCK_SAMPLES * 2);
+        startPart = 0;
         part = 0;
         wavetable = wavetablePtr;
         return this;
@@ -83,6 +87,10 @@ class AudioWaveTable : public AudioStream {
         return this;
     }
 
+    AudioWaveTable *setStartPart(int _startPart) {
+        startPart = _startPart < 0 ? 0 : _startPart;
+    }
+
     void update(void) {
         if (magnitude == 0) {
             phase_accumulator += phase_increment * AUDIO_BLOCK_SAMPLES;
@@ -99,7 +107,11 @@ class AudioWaveTable : public AudioStream {
 
         int16_t *bp = block->data;
 
-        uint32_t addToIndex = part * AUDIO_BLOCK_SAMPLES * 2;
+        uint32_t addToIndex = startPart - 1;
+        if (startPart == 0) {
+            addToIndex = part * AUDIO_BLOCK_SAMPLES * 2;
+            part = (part + 1) % partModulo;
+        }
         for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
             uint32_t ph = (this->*ptrComputeModulation)(moddata);
             uint32_t index = (ph >> 24) + addToIndex;
@@ -108,7 +120,6 @@ class AudioWaveTable : public AudioStream {
             int32_t val2 = *(wavetable + index + 1) * (0x10000 - scale);
             *bp++ = multiply_32x32_rshift32(val1 + val2, magnitude);
         }
-        part = (part + 1) % partModulo;
 
         applyToneOffset(block->data);
         transmit(block, 0);

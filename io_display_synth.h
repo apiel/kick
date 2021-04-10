@@ -52,7 +52,8 @@ void displaySynth(Adafruit_SSD1306* d) {
     d->printf("%s %.1fHz %d%%\n", getWave(synth.currentWaveform),
               synth.frequency, (int)(synth.amplitude * 100));
 
-    d->printf("EG %d|%d\n", (int)synth.attackMs, (int)synth.decayMs);
+    d->printf("EG %d|%d Start %d\n", (int)synth.attackMs, (int)synth.decayMs,
+              synth.waveform.startPart - 1);
 
     addToCursor(d, 0, 2);
     d->printf("%s %.1fHz %.1f\n", getFilter(synth.currentFilter),
