@@ -86,8 +86,8 @@ class IO_AudioSynth : public AudioDumb {
         filter.resonance(filterResonance);
         filter.octaveControl(filterOctaveControl);
 
-        waveform.frequency(frequency);
-        waveform.amplitude(amplitude);
+        waveform.setFrequency(frequency);
+        waveform.setAmplitude(amplitude);
         // waveform.begin(WAVEFORM_SINE);
         // waveform.arbitraryWaveform(arbitraryWaveform, 172.0);
         // waveform.arbitraryWaveform(arbitraryWaveform);
@@ -138,7 +138,7 @@ class IO_AudioSynth : public AudioDumb {
     }
 
     void setWaveStartPart(int8_t direction) {
-        waveform.setStartPart(waveform.startPart + direction);
+        waveform.setStart(waveform.start + direction);
     }
 
     void setBitcrusher(int8_t direction) {
@@ -179,12 +179,12 @@ class IO_AudioSynth : public AudioDumb {
     void setFrequency(int8_t direction) {
         frequency =
             constrain(frequency + direction, 0, AUDIO_SAMPLE_RATE_EXACT / 2);
-        waveform.frequency(frequency);
+        waveform.setFrequency(frequency);
     }
 
     void setAmplitude(int8_t direction) {
         amplitude = pctAdd(amplitude, direction);
-        waveform.amplitude(amplitude);
+        waveform.setAmplitude(amplitude);
     }
 
     void setCurrentFilter(int8_t direction) {
@@ -232,8 +232,8 @@ class IO_AudioSynth : public AudioDumb {
         float _freq = frequency + NOTE_FREQ[note] - NOTE_FREQ[_C4];
         float _amp = amplitude * velocity / 127;
 
-        waveform.amplitude(_amp);
-        waveform.frequency(_freq);
+        waveform.setAmplitude(_amp);
+        waveform.setFrequency(_freq);
         envMod.noteOn();
         env.noteOn();
     }
