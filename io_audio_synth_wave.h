@@ -9,14 +9,13 @@
 #include "note.h"
 #include "wavetable/AudioWaveTable256.h"
 #include "wavetable/AudioWaveTableBig.h"
-#include "wavetable/guitar01.h"
-#include "wavetable/kick06.h"
-#include "wavetable/sine256.h"
+#include "wavetable/AudioWaveTableList.h"
 
 class IO_AudioSynthWave : public AudioDumb {
    public:
     AudioWaveTableBig waveBig;
     AudioWaveTable256 wave256;
+    AudioWaveTableList waveList;
     AudioDumb input;
 
     uint16_t currentWave = 0;
@@ -37,10 +36,9 @@ class IO_AudioSynthWave : public AudioDumb {
         patchCordInputToWave256 = new AudioConnection(input, wave256);
         patchCordWave256ToDumb = new AudioConnection(wave256, *this);
 
-        applyCord();
-
         setFrequency(0);
         setAmplitude(0);
+        setNextWaveform(0);
     }
 
     IO_AudioSynthWave(float freq) {
@@ -79,9 +77,11 @@ class IO_AudioSynthWave : public AudioDumb {
     IO_AudioSynthWave* setNextWaveform(int8_t direction) {
         currentWave = mod(currentWave + direction, 2);
         if (currentWave == 0) {
-            wave256.setTable(sine256, WAVETABLE_SINE256_SIZE);
+            wave256.setTable(waveList.getTable(0)->table,
+                             waveList.getTable(0)->size);
         } else {
-            waveBig.setTable(sine256, WAVETABLE_SINE256_SIZE);
+            waveBig.setTable(waveList.getTable(0)->table,
+                             waveList.getTable(0)->size);
         }
         applyCord();
         return this;
