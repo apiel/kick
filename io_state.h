@@ -5,11 +5,11 @@
 
 #include "io_util.h"
 
-enum { VIEW_SYNTH, VIEW_COUNT };
+enum { VIEW_KICK, VIEW_COUNT };
 
 IO_AudioKick kick;
 
-byte currentView = VIEW_SYNTH;
+byte currentView = VIEW_KICK;
 bool mcMode = false;
 bool sdAvailable = true;
 

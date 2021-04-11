@@ -1,5 +1,5 @@
-#ifndef IO_MIDI_SYNTH_H_
-#define IO_MIDI_SYNTH_H_
+#ifndef IO_MIDI_KICK_H_
+#define IO_MIDI_KICK_H_
 
 #include <Arduino.h>
 
@@ -7,15 +7,15 @@
 #include "io_midi_util.h"
 #include "io_state.h"
 
-void synthNoteOnHandler(byte channel, byte note, byte velocity) {
+void kickNoteOnHandler(byte channel, byte note, byte velocity) {
     if (channel == 11) {
         byte key = getItemKey(note);
         if (key != 255) {
-            // currentSynth = key;
+            // currentkick = key;
         } else if (note == 22 || note == 46) {
             kick.noteOn();
         } else if (note == 23 || note == 47) {
-            // saveSynth(currentSynth);
+            // savekick(currentkick);
         } else if (note == 20) {
         } else if (note == 17 || note == 41) {
             if (mcMode) {
@@ -27,7 +27,7 @@ void synthNoteOnHandler(byte channel, byte note, byte velocity) {
     }
 }
 
-void synthNoteOffHandler(byte channel, byte note, byte velocity) {
+void kickNoteOffHandler(byte channel, byte note, byte velocity) {
     if (channel == 11) {
         if (note == 22 || note == 46) {
             kick.noteOff();
@@ -35,7 +35,7 @@ void synthNoteOffHandler(byte channel, byte note, byte velocity) {
     }
 }
 
-void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
+void kickControlChangeHandler(byte channel, byte knob, int8_t direction) {
     if (channel == 11) {
         if (knob == 1) {
             if (mcMode) {

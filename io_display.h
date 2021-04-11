@@ -41,7 +41,7 @@ void displayUpdate() {
     if (millis() - lastDisplayUpdate >= 50) {
         needDisplayUpdate = false;
         lastDisplayUpdate = millis();
-        if (currentView == VIEW_SYNTH) {
+        if (currentView == VIEW_KICK) {
             displaySynth(&display);
         }
         display.display();

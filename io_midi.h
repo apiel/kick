@@ -7,7 +7,7 @@
 #include "io_display.h"
 #include "io_midi_core.h"
 #include "io_midi_default.h"
-#include "io_midi_synth.h"
+#include "io_midi_kick.h"
 #include "io_midi_util.h"
 
 void noteOnHandler(byte channel, byte note, byte velocity) {
@@ -22,8 +22,8 @@ void noteOnHandler(byte channel, byte note, byte velocity) {
     Serial.println(velocity, DEC);
 
     if (!defaultNoteOnHandler(channel, note, velocity)) {
-        if (currentView == VIEW_SYNTH) {
-            synthNoteOnHandler(channel, note, velocity);
+        if (currentView == VIEW_KICK) {
+            kickNoteOnHandler(channel, note, velocity);
         }
         displayUpdate();
     }
@@ -37,8 +37,8 @@ void noteOffHandler(byte channel, byte note, byte velocity) {
     Serial.print(", velocity=");
     Serial.println(velocity, DEC);
 
-    if (currentView == VIEW_SYNTH) {
-        synthNoteOffHandler(channel, note, velocity);
+    if (currentView == VIEW_KICK) {
+        kickNoteOffHandler(channel, note, velocity);
     }
     displayUpdate();
 }
@@ -55,8 +55,8 @@ void controlChangeHandler(byte channel, byte control, byte value) {
     Serial.println(value, DEC);
 
     int8_t direction = getKnobDirection(knob, value);
-    if (currentView == VIEW_SYNTH) {
-        synthControlChangeHandler(channel, knob, direction);
+    if (currentView == VIEW_KICK) {
+        kickControlChangeHandler(channel, knob, direction);
     }
     displayUpdate();
 }
