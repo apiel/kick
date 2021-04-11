@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include <Audio.h>
 
-#include "../note.h"
+#include "../audio/note.h"
 #include "wavetable/guitar01.h"
 #include "wavetable/kick06.h"
 #include "wavetable/sine256.h"

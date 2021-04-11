@@ -4,12 +4,12 @@
 #include <Arduino.h>
 #include <Audio.h>
 
-#include "audio_dumb.h"
+#include "../audio/audio_dumb.h"
 #include "io_audio_synth_wave.h"
 #include "effect/AudioEffectDistortion.h"
-#include "envelope.h"
+#include "../audio/envelope.h"
 #include "io_util.h"
-#include "note.h"
+#include "../audio/note.h"
 
 #define WAVEFORM_COUNT 9
 
