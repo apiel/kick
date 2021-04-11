@@ -46,7 +46,7 @@ class IO_AudioSynthWave : public AudioDumb {
         IO_AudioSynthWave();
     }
 
-    bool isWave256() { return currentWave == 0; }
+    bool isWave256() { return currentWave < AUDIO_WAVETABLE_SIZE; }
 
     IO_AudioSynthWave* setStart(int8_t direction) {
         if (isWave256()) {
@@ -75,13 +75,14 @@ class IO_AudioSynthWave : public AudioDumb {
     }
 
     IO_AudioSynthWave* setNextWaveform(int8_t direction) {
-        currentWave = mod(currentWave + direction, 2);
-        if (currentWave == 0) {
-            wave256.setTable(waveList.getTable(0)->table,
-                             waveList.getTable(0)->size);
+        currentWave = mod(currentWave + direction, AUDIO_WAVETABLE_SIZE * 2);
+        if (isWave256()) {
+            wave256.setTable(waveList.getTable(currentWave)->table,
+                             waveList.getTable(currentWave)->size);
         } else {
-            waveBig.setTable(waveList.getTable(0)->table,
-                             waveList.getTable(0)->size);
+            waveBig.setTable(
+                waveList.getTable(currentWave - AUDIO_WAVETABLE_SIZE)->table,
+                waveList.getTable(currentWave - AUDIO_WAVETABLE_SIZE)->size);
         }
         applyCord();
         return this;

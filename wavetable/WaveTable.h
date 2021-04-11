@@ -7,10 +7,12 @@ class WaveTable {
    public:
     const int16_t* table;
     uint32_t size;
+    const char * name;
 
-    WaveTable(uint32_t _size, const int16_t* _table) {
+    WaveTable(const char * _name, uint32_t _size, const int16_t* _table) {
         table = _table;
         size = _size;
+        name = _name;
     }
 };
 

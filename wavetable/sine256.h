@@ -9,7 +9,7 @@
 
 class Sine256 : public WaveTable {
    public:
-    Sine256() : WaveTable(WAVETABLE_SIZE, data) {}
+    Sine256() : WaveTable("Sine256", WAVETABLE_SIZE, data) {}
 
    private:
     const int16_t data[WAVETABLE_SIZE] = {
