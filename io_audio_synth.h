@@ -10,8 +10,8 @@
 #include "envelope.h"
 #include "io_util.h"
 #include "note.h"
-#include "wavetable/AudioWaveTable.h"
-// #include "wavetable/AudioWaveTable2.h"
+#include "wavetable/AudioWaveTable256.h"
+// #include "wavetable/AudioWaveTable.h"
 
 #define WAVEFORM_COUNT 9
 
@@ -22,7 +22,6 @@
 class IO_AudioSynth : public AudioDumb {
    protected:
    public:
-    // AudioSynthWaveformModulated waveform;
     AudioWaveTable waveform;
     Envelope<2> env;
     AudioFilterStateVariable filter;
