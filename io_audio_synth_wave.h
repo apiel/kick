@@ -19,6 +19,7 @@ class IO_AudioSynthWave : public AudioDumb {
     AudioDumb input;
 
     uint16_t currentWave = 0;
+    char* waveName;
 
     float frequency = NOTE_FREQ[_C4];
     float amplitude = 1.0;
@@ -77,12 +78,14 @@ class IO_AudioSynthWave : public AudioDumb {
     IO_AudioSynthWave* setNextWaveform(int8_t direction) {
         currentWave = mod(currentWave + direction, AUDIO_WAVETABLE_SIZE * 2);
         if (isWave256()) {
+            waveName = (char*)waveList.getTable(currentWave)->name;
             wave256.setTable(waveList.getTable(currentWave)->table,
                              waveList.getTable(currentWave)->size);
         } else {
-            waveBig.setTable(
-                waveList.getTable(currentWave - AUDIO_WAVETABLE_SIZE)->table,
-                waveList.getTable(currentWave - AUDIO_WAVETABLE_SIZE)->size);
+            uint16_t pos = currentWave - AUDIO_WAVETABLE_SIZE;
+            waveName = (char*)waveList.getTable(pos)->name;
+            waveBig.setTable(waveList.getTable(pos)->table,
+                             waveList.getTable(pos)->size);
         }
         applyCord();
         return this;

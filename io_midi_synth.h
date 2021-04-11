@@ -20,9 +20,9 @@ void synthNoteOnHandler(byte channel, byte note, byte velocity) {
         } else if (note == 20) {
         } else if (note == 17 || note == 41) {
             if (mcMode) {
-                synth.toggleRectifier();
-            } else {
                 synth.toggleModulation();
+            } else {
+                synth.toggleRectifier();
             }
         }
     }
@@ -40,83 +40,95 @@ void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
     if (channel == 11) {
         if (knob == 1) {
             if (mcMode) {
-                synth.setBitcrusher(direction);
+                synth.setModLevel(0, direction);
             } else {
                 synth.waveform.setNextWaveform(direction);
             }
         } else if (knob == 2) {
             if (mcMode) {
-                synth.setDistortion(direction);
+                synth.setModLevel(1, direction);
             } else {
                 synth.waveform.setFrequency(direction);
             }
         } else if (knob == 3) {
             if (mcMode) {
-                synth.setDistortionRange(direction);
+                synth.setModLevel(2, direction);
             } else {
                 synth.waveform.setAmplitude(direction);
             }
         } else if (knob == 4) {
             if (mcMode) {
-                synth.waveform.setStart(direction);
-            } else {
-                synth.setCurrentFilter(direction);
-            }
-        } else if (knob == 5) {
-            synth.setFilterFrequency(direction);
-        } else if (knob == 6) {
-            synth.setFilterResonance(direction);
-        } else if (knob == 7) {
-            synth.setAttack(direction);
-        } else if (knob == 8) {
-            synth.setDecay(direction);
-        } else if (knob == 11) {
-            if (mcMode) {
-                synth.setModLevel(0, direction);
-            } else {
-                synth.setModMs(0, direction);
-            }
-        } else if (knob == 12) {
-            if (mcMode) {
-                synth.setModLevel(1, direction);
-            } else {
-                synth.setModMs(1, direction);
-            }
-        } else if (knob == 13) {
-            if (mcMode) {
-                synth.setModLevel(2, direction);
-            } else {
-                synth.setModMs(2, direction);
-            }
-        } else if (knob == 14) {
-            if (mcMode) {
                 synth.setModLevel(3, direction);
             } else {
-                synth.setModMs(3, direction);
             }
-        } else if (knob == 15) {
+        } else if (knob == 5) {
             if (mcMode) {
                 synth.setModLevel(4, direction);
             } else {
-                synth.setModMs(4, direction);
             }
-        } else if (knob == 16) {
+        } else if (knob == 6) {
             if (mcMode) {
                 synth.setModLevel(5, direction);
             } else {
-                synth.setModMs(5, direction);
+                synth.waveform.setStart(direction);
             }
-        } else if (knob == 17) {
+        } else if (knob == 7) {
             if (mcMode) {
                 synth.setModLevel(6, direction);
             } else {
-                synth.setModMs(6, direction);
+                synth.setAttack(direction);
             }
-        } else if (knob == 0) {  // 0 for 18
+        } else if (knob == 8) {
             if (mcMode) {
                 synth.setModLevel(7, direction);
             } else {
+                synth.setDecay(direction);
+            }
+        } else if (knob == 11) {
+            if (mcMode) {
+                synth.setModMs(0, direction);
+            } else {
+                synth.setCurrentFilter(direction);
+            }
+        } else if (knob == 12) {
+            if (mcMode) {
+                synth.setModMs(1, direction);
+            } else {
+                synth.setFilterFrequency(direction);
+            }
+        } else if (knob == 13) {
+            if (mcMode) {
+                synth.setModMs(2, direction);
+            } else {
+                synth.setFilterResonance(direction);
+            }
+        } else if (knob == 14) {
+            if (mcMode) {
+                synth.setModMs(3, direction);
+            } else {
+            }
+        } else if (knob == 15) {
+            if (mcMode) {
+                synth.setModMs(4, direction);
+            } else {
+            }
+        } else if (knob == 16) {
+            if (mcMode) {
+                synth.setModMs(5, direction);
+            } else {
+                synth.setDistortion(direction);
+            }
+        } else if (knob == 17) {
+            if (mcMode) {
+                synth.setModMs(6, direction);
+            } else {
+                synth.setDistortionRange(direction);
+            }
+        } else if (knob == 0) {  // 0 for 18
+            if (mcMode) {
                 synth.setModMs(7, direction);
+            } else {
+                synth.setBitcrusher(direction);
             }
         }
     }
