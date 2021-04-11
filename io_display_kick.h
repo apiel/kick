@@ -1,5 +1,5 @@
-#ifndef IO_DISPLAY_SYNTH_H_
-#define IO_DISPLAY_SYNTH_H_
+#ifndef IO_DISPLAY_KICK_H_
+#define IO_DISPLAY_KICK_H_
 
 #include <Adafruit_SSD1306.h>
 
@@ -19,7 +19,7 @@ const char* getFilter(byte w) {
     return "??";
 }
 
-void displaySynth(Adafruit_SSD1306* d) {
+void displayKick(Adafruit_SSD1306* d) {
     d->clearDisplay();
     d->setCursor(0, 0);
 

@@ -8,7 +8,7 @@
 #include <Wire.h>
 
 #include "io_audio.h"
-#include "io_display_synth.h"
+#include "io_display_kick.h"
 #include "io_display_util.h"
 #include "io_state.h"
 
@@ -42,7 +42,7 @@ void displayUpdate() {
         needDisplayUpdate = false;
         lastDisplayUpdate = millis();
         if (currentView == VIEW_KICK) {
-            displaySynth(&display);
+            displayKick(&display);
         }
         display.display();
     } else {
