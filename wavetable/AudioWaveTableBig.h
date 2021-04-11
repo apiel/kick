@@ -1,20 +1,20 @@
-#ifndef AudioWaveTable_h_
-#define AudioWaveTable_h_
+#ifndef AudioWaveTableBig_h_
+#define AudioWaveTableBig_h_
 
 #include <Arduino.h>
 #include <Audio.h>
 
-#include "../note.h"  // to remove
+#include "../note.h"
 #include "wavetable/guitar01.h"
 #include "wavetable/kick06.h"
 #include "wavetable/sine256.h"
 #include "wavetable/sine512.h"
 
-class AudioWaveTable : public AudioStream {
+class AudioWaveTableBig : public AudioStream {
    public:
     uint32_t start = 0;
 
-    AudioWaveTable(void) : AudioStream(2, inputQueueArray) {
+    AudioWaveTableBig(void) : AudioStream(2, inputQueueArray) {
         setFrequency(100.0);
         setAmplitude(1.0);
         // setTable(sine256, WAVETABLE_SINE256_SIZE);
@@ -23,14 +23,14 @@ class AudioWaveTable : public AudioStream {
         // setTable(guitar01, WAVETABLE_GUITAR06_SIZE);
     }
 
-    AudioWaveTable *setTable(const int16_t *wavetablePtr, u_int16_t size) {
+    AudioWaveTableBig *setTable(const int16_t *wavetablePtr, u_int16_t size) {
         wavetable = wavetablePtr;
         wavesize = size;
         start = 0;
         return this;
     }
 
-    AudioWaveTable *setFrequency(float freq) {
+    AudioWaveTableBig *setFrequency(float freq) {
         if (freq <= 0.0) {
             phase_increment = 0.0;
         } else {
@@ -39,12 +39,12 @@ class AudioWaveTable : public AudioStream {
         return this;
     }
 
-    AudioWaveTable *setAmplitude(float n) {  // 0 to 1.0
+    AudioWaveTableBig *setAmplitude(float n) {  // 0 to 1.0
         amplitude = constrain(n, 0.0, 1.0);
         return this;
     }
 
-    AudioWaveTable *frequencyModulation(float octaves) {
+    AudioWaveTableBig *frequencyModulation(float octaves) {
         if (octaves > 12.0) {
             octaves = 12.0;
         } else if (octaves < 0.1) {
@@ -54,7 +54,7 @@ class AudioWaveTable : public AudioStream {
         return this;
     }
 
-    AudioWaveTable *setStart(int val) {
+    AudioWaveTableBig *setStart(int val) {
         start = val < 0 ? 0 : val;
         return this;
     }
@@ -104,6 +104,8 @@ class AudioWaveTable : public AudioStream {
             int16_t *md = moddata->data;
             int32_t val = *md++;
             if (val) {
+                // need to have a look at dc.amplitude(0.5);
+                // if 1.0 maybe 16384.0 will be doubled
                 float n = (float)val / 16384.0;
                 // but this is not right maybe need to do 
                 // something with octave or freq

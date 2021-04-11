@@ -9,11 +9,11 @@
 #include "wavetable/sine256.h"
 #include "wavetable/sine512.h"
 
-class AudioWaveTable : public AudioStream {
+class AudioWaveTable256 : public AudioStream {
    public:
     uint32_t start = 0;
 
-    AudioWaveTable(void) : AudioStream(2, inputQueueArray) {
+    AudioWaveTable256(void) : AudioStream(2, inputQueueArray) {
         setFrequency(100.0);
         setAmplitude(1.0);
         // setTable(sine256, WAVETABLE_SINE256_SIZE);
@@ -23,42 +23,42 @@ class AudioWaveTable : public AudioStream {
     }
 
     // size is not necessary
-    AudioWaveTable *setTable(const int16_t *wavetablePtr, u_int16_t size) {
+    AudioWaveTable256 *setTable(const int16_t *wavetablePtr, u_int16_t size) {
         start = 0;
         wavetable = wavetablePtr;
         return this;
     }
 
-    AudioWaveTable *setFrequency(float freq) {
+    AudioWaveTable256 *setFrequency(float freq) {
         phase_increment = constrain(
             freq * (4294967296.0 / AUDIO_SAMPLE_RATE_EXACT), 0.0, 0x7FFE0000u);
         return this;
     }
 
-    AudioWaveTable *setAmplitude(float n) {  // 0 to 1.0
+    AudioWaveTable256 *setAmplitude(float n) {  // 0 to 1.0
         magnitude = constrain(n, 0.0, 1.0) * 65536.0;
         return this;
     }
 
-    AudioWaveTable *offset(float n) {
+    AudioWaveTable256 *offset(float n) {
         tone_offset = constrain(n, -1.0, 1.0) * 32767.0;
         return this;
     }
 
-    AudioWaveTable *frequencyModulation(float octaves) {
+    AudioWaveTable256 *frequencyModulation(float octaves) {
         modulation_factor = constrain(octaves, 0.1, 12.0) * 4096.0;
         modulation_type = 0;
         return this;
     }
 
-    AudioWaveTable *phaseModulation(float degrees) {
+    AudioWaveTable256 *phaseModulation(float degrees) {
         modulation_factor =
             constrain(degrees, 30.0, 9000.0) * (65536.0 / 180.0);
         modulation_type = 1;
         return this;
     }
 
-    AudioWaveTable *setStart(int _start) {
+    AudioWaveTable256 *setStart(int _start) {
         start = _start < 0 ? 0 : _start;
         return this;
     }
@@ -103,18 +103,18 @@ class AudioWaveTable : public AudioStream {
     const int16_t *wavetable = NULL;
     int16_t tone_offset = 0;
     uint8_t modulation_type = 0;
-    uint32_t (AudioWaveTable::*ptrComputeModulation)(audio_block_t *moddata);
+    uint32_t (AudioWaveTable256::*ptrComputeModulation)(audio_block_t *moddata);
 
     void assignModulation(audio_block_t *moddata) {
         if (moddata) {
             if (modulation_type == 0) {
                 ptrComputeModulation =
-                    &AudioWaveTable::computeFrequencyModulation;
+                    &AudioWaveTable256::computeFrequencyModulation;
             } else {
-                ptrComputeModulation = &AudioWaveTable::computePhaseModulation;
+                ptrComputeModulation = &AudioWaveTable256::computePhaseModulation;
             }
         } else {
-            ptrComputeModulation = &AudioWaveTable::computeNoModulation;
+            ptrComputeModulation = &AudioWaveTable256::computeNoModulation;
         }
     }
 

@@ -42,23 +42,23 @@ void synthControlChangeHandler(byte channel, byte knob, int8_t direction) {
             if (mcMode) {
                 synth.setBitcrusher(direction);
             } else {
-                synth.setNextWaveform(direction);
+                synth.waveform.setNextWaveform(direction);
             }
         } else if (knob == 2) {
             if (mcMode) {
                 synth.setDistortion(direction);
             } else {
-                synth.setFrequency(direction);
+                synth.waveform.setFrequency(direction);
             }
         } else if (knob == 3) {
             if (mcMode) {
                 synth.setDistortionRange(direction);
             } else {
-                synth.setAmplitude(direction);
+                synth.waveform.setAmplitude(direction);
             }
         } else if (knob == 4) {
             if (mcMode) {
-                synth.setWaveStart(direction);
+                synth.waveform.setStart(direction);
             } else {
                 synth.setCurrentFilter(direction);
             }
