@@ -5,14 +5,14 @@
 #include <Audio.h>
 
 #include "instrument/io_audio_kick.h"
-#include "io_audio_synth_storage.h"
+#include "io_state.h"
 
 AudioOutputMQS audioOut;
-AudioConnection patchCordSynth(synth, audioOut);
+AudioConnection patchCordKick(kick, audioOut);
 
 void audioInit() {
     AudioMemory(25);
-    synth.init();
+    kick.init();
 }
 
 #endif

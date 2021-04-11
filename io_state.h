@@ -7,6 +7,8 @@
 
 enum { VIEW_SYNTH, VIEW_COUNT };
 
+IO_AudioKick kick;
+
 byte currentView = VIEW_SYNTH;
 bool mcMode = false;
 bool sdAvailable = true;

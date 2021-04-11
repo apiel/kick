@@ -23,44 +23,44 @@ void displaySynth(Adafruit_SSD1306* d) {
     d->clearDisplay();
     d->setCursor(0, 0);
 
-    d->printf("%s %s\n", synth.waveform.isWave256() ? "#" : "~",
-              synth.waveform.waveName);
+    d->printf("%s %s\n", kick.waveform.isWave256() ? "#" : "~",
+              kick.waveform.waveName);
 
     if (mcMode) {
-        if (synth.modulationOn) {
+        if (kick.modulationOn) {
             addToCursor(d, 0, 4);
             d->println("Modulation level");
-            d->printf("%.2f|%.2f|%.2f|%.2f\n", synth.modLevel[0],
-                      synth.modLevel[1], synth.modLevel[2], synth.modLevel[3]);
-            d->printf("%.2f|%.2f|%.2f|%.2f\n", synth.modLevel[4],
-                      synth.modLevel[5], synth.modLevel[6], synth.modLevel[7]);
+            d->printf("%.2f|%.2f|%.2f|%.2f\n", kick.modLevel[0],
+                      kick.modLevel[1], kick.modLevel[2], kick.modLevel[3]);
+            d->printf("%.2f|%.2f|%.2f|%.2f\n", kick.modLevel[4],
+                      kick.modLevel[5], kick.modLevel[6], kick.modLevel[7]);
 
             addToCursor(d, 0, 4);
             d->println("Modulation ms");
-            d->printf("%d|%d|%d|%d\n", (int)synth.modMs[0], (int)synth.modMs[1],
-                      (int)synth.modMs[2], (int)synth.modMs[3]);
-            d->printf("%d|%d|%d|%d\n", (int)synth.modMs[4], (int)synth.modMs[5],
-                      (int)synth.modMs[6], (int)synth.modMs[7]);
+            d->printf("%d|%d|%d|%d\n", (int)kick.modMs[0], (int)kick.modMs[1],
+                      (int)kick.modMs[2], (int)kick.modMs[3]);
+            d->printf("%d|%d|%d|%d\n", (int)kick.modMs[4], (int)kick.modMs[5],
+                      (int)kick.modMs[6], (int)kick.modMs[7]);
         } else {
             d->println("\nNo modulation");
         }
     } else {
-        d->printf("%.1fHz %d%%\n", synth.waveform.frequency,
-                  (int)(synth.waveform.amplitude * 100));
+        d->printf("%.1fHz %d%%\n", kick.waveform.frequency,
+                  (int)(kick.waveform.amplitude * 100));
 
-        d->printf("Start %d EG %d|%d\n", synth.waveform.getStart(),
-                  (int)synth.attackMs, (int)synth.decayMs);
+        d->printf("Start %d EG %d|%d\n", kick.waveform.getStart(),
+                  (int)kick.attackMs, (int)kick.decayMs);
 
         addToCursor(d, 0, 4);
-        d->printf("%s %.1fHz %.1f\n", getFilter(synth.currentFilter),
-                  synth.filterFrequency, synth.filterResonance);
+        d->printf("%s %.1fHz %.1f\n", getFilter(kick.currentFilter),
+                  kick.filterFrequency, kick.filterResonance);
 
-        d->printf("Dist %d range %d\n", (int)synth.distortion.amount,
-                  (int)synth.distortion.range);
-        d->printf("Bitcrusher %d\n", (int)synth.xcrushBits);
+        d->printf("Dist %d range %d\n", (int)kick.distortion.amount,
+                  (int)kick.distortion.range);
+        d->printf("Bitcrusher %d\n", (int)kick.xcrushBits);
 
-        d->printf("%s %s\n", synth.modulationOn ? "ModON" : "ModOFF",
-                  synth.rectifierOn ? "RectON" : "RectOFF");
+        d->printf("%s %s\n", kick.modulationOn ? "ModON" : "ModOFF",
+                  kick.rectifierOn ? "RectON" : "RectOFF");
     }
 }
 
