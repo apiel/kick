@@ -4,11 +4,11 @@
 #include <SD.h>
 
 #include "io_audio.h"
-#include "io_audio_synth.h"
+#include "instrument/io_audio_kick.h"
 #include "io_state.h"
 #include "io_storage.h"
 
-IO_AudioSynth synth;
+IO_AudioKick synth;
 
 void setSynthPath(byte pos) { setFilePath("synth/%03d.io", pos); }
 

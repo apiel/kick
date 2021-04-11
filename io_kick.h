@@ -5,7 +5,7 @@
 #include <SD.h>
 
 #include "io_audio.h"
-#include "io_audio_synth.h"
+#include "instrument/io_audio_kick.h"
 #include "io_config.h"
 #include "io_display.h"
 #include "io_midi.h"

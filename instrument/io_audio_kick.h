@@ -1,13 +1,13 @@
-#ifndef IO_AUDIO_SYNTH_H_
-#define IO_AUDIO_SYNTH_H_
+#ifndef IO_AUDIO_KICK_H_
+#define IO_AUDIO_KICK_H_
 
 #include <Arduino.h>
 #include <Audio.h>
 
 #include "audio_dumb.h"
+#include "io_audio_synth_wave.h"
 #include "effect/AudioEffectDistortion.h"
 #include "envelope.h"
-#include "io_audio_synth_wave.h"
 #include "io_util.h"
 #include "note.h"
 
@@ -17,7 +17,7 @@
 #define AUDIO_SYNTH_MOD 3
 #define MOD_ENV_SIZE 8
 
-class IO_AudioSynth : public AudioDumb {
+class IO_AudioKick : public AudioDumb {
    protected:
    public:
     IO_AudioSynthWave waveform;
@@ -57,7 +57,7 @@ class IO_AudioSynth : public AudioDumb {
     AudioConnection* patchCordDistortionToOutput;
     AudioConnection* patchCordRectifier;
 
-    IO_AudioSynth() {
+    IO_AudioKick() {
         patchCordDcToEnvMod = new AudioConnection(dc, envMod);
         patchCordEnvModToWave = new AudioConnection(envMod, waveform.input);
         patchCordWaveToEnv = new AudioConnection(waveform, env);
