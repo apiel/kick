@@ -1,5 +1,7 @@
 # Kick
 
+- try to add some echo / tank reverb style like mozzi
+
 - distortion https://cain-synthesizer.com/cain-cz-2
 - new wavetable
 
@@ -9,6 +11,4 @@
 - https://tonejs.github.io/docs/14.7.77/Distortion
 - https://stackoverflow.com/questions/22312841/waveshaper-node-in-webaudio-how-to-emulate-distortion/22313408#22313408
 
-- EQ
-
-- Move modulation in different view visible with MC...
+- EQ?
