@@ -1,5 +1,5 @@
-#ifndef IO_SYNTH_H_
-#define IO_SYNTH_H_
+#ifndef IO_H_
+#define IO_H_
 
 #include <Arduino.h>
 #include <SD.h>
@@ -11,7 +11,7 @@
 #include "io_midi.h"
 #include "io_state.h"
 
-void ioSynthInit() {
+void ioInit() {
     // // to comment out
     // while (!Serial)
     //     ;
@@ -32,7 +32,7 @@ void ioSynthInit() {
 }
 
 unsigned long last_time = millis();
-void ioSynthLoop() {
+void ioLoop() {
     midiLoop();
     displayLoop();
 
